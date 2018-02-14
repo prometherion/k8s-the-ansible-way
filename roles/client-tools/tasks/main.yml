@@ -1,0 +1,30 @@
+---
+  #
+  # CFSSL
+  #
+  - name: Mac OS X distribution
+    include_tasks: cfssl/macosx.yml
+    when: ansible_distribution == 'MacOSX'
+
+  - name: Linux distribution
+    include_tasks: cfssl/linux.yml
+    when: ansible_distribution != 'MacOSX'
+
+  - name: Checking `cfssl`
+    command: cfssl version
+
+  - name: Checking `cfssl`
+    command: cfssljson --version
+  #
+  # kubectl
+  #
+  - name: Mac OS X distribution
+    include_tasks: kubectl/macosx.yml
+    when: ansible_distribution == 'MacOSX'
+
+  - name: Linux distribution
+    include_tasks: kubectl/loinux.yml
+    when: ansible_distribution != 'MacOSX'
+
+  - name: Checking `kubectl`
+    command: kubectl version

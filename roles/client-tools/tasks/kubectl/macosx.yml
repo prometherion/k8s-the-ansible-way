@@ -1,0 +1,8 @@
+---
+  - command: kubectl version
+    ignore_errors: true
+    register: kubectl
+
+  - name: Installing `kubectl`
+    command: "brew install kubectl -f"
+    when: kubectl.rc != 0

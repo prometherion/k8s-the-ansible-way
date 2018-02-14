@@ -1,0 +1,5 @@
+---
+  - name: Installing the Client Tools
+    hosts: localhost
+    roles:
+      - client-tools
