@@ -1,0 +1,16 @@
+{
+    "CN": "system:node:{{ ansible_nodename }}",
+    "key": {
+      "algo": "rsa",
+      "size": 2048
+    },
+    "names": [
+      {
+        "C": "{{ country|default('US') }}",
+        "L": "{{ city|default('Portland') }}",
+        "O": "system:nodes",
+        "OU": "{{ organization_unit|default('CA') }}",
+        "ST": "Oregon"
+      }
+    ]
+  }

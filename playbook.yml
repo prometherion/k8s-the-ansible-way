@@ -1,22 +1,23 @@
 ---
-  - name: Distributing Client Certificates
-    hosts: controllers
-    roles:
-      - role: certificate-authority-controllers
-        crt_path: "./../certificate-authority/files"
-  - name: Provisioning a CA and Generating TLS Certificates
-    hosts: localhost
-    roles:
-      - certificate-authority
-
-
-  - name: Distributing Client Certificates
-    hosts: workers
-    roles:
-      - role: certificate-authority-workers
-        crt_path: "./../certificate-authority/files"
 
   - name: Installing the Client Tools
     hosts: localhost
     roles:
       - client-tools
+
+  - name: Provisioning a CA and Generating TLS Certificates
+    hosts: localhost
+    roles:
+      - certificate-authority
+  
+  - name: Distributing Client Certificates
+    hosts: controllers
+    roles:
+      - role: certificate-authority-controllers
+        crt_path: "./../certificate-authority/files"
+  
+  - name: Distributing Client Certificates
+    hosts: workers
+    roles:
+      - role: certificate-authority-workers
+        crt_path: "./../certificate-authority/files"

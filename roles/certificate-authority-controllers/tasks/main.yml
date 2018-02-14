@@ -1,0 +1,10 @@
+---
+  - name: Copy certificates and private key
+    copy:
+      dest: ~/
+      src: "{{ item }}"
+    with_items:
+      - "{{ crt_path }}/ca.pem"
+      - "{{ crt_path }}/ca-key.pem"
+      - "{{ crt_path }}/kubernetes-key.pem"
+      - "{{ crt_path }}/kubernetes.pem"
