@@ -1,23 +1,29 @@
 ---
-
   - name: Installing the Client Tools
     hosts: localhost
     roles:
-      - client-tools
+      - client-tools  
 
   - name: Provisioning a CA and Generating TLS Certificates
     hosts: localhost
     roles:
       - certificate-authority
-  
-  - name: Distributing Client Certificates
+
+  - name: Distributing Client Certificates for Controllers
     hosts: controllers
     roles:
-      - role: certificate-authority-controllers
-        crt_path: "./../certificate-authority/files"
-  
-  - name: Distributing Client Certificates
+      - role: certificate-authority-deployer
+        items:
+          - "./../certificate-authority/files/ca.pem"
+          - "./../certificate-authority/files/ca-key.pem"
+          - "./../certificate-authority/files/kubernetes-key.pem"
+          - "./../certificate-authority/files/kubernetes.pem"
+
+  - name: Distributing Client Certificates for Workers
     hosts: workers
     roles:
-      - role: certificate-authority-workers
-        crt_path: "./../certificate-authority/files"
+      - role: certificate-authority-deployer
+        items:
+          - "./../certificate-authority/files/ca.pem"
+          - "./../certificate-authority/files/{{ ansible_nodename }}-key.pem"
+          - "./../certificate-authority/files/{{ ansible_nodename }}.pem"
