@@ -1,9 +1,0 @@
----
-  - name: Copy certificates and private key
-    copy:
-      dest: ~/
-      src: "{{ item }}"
-    with_items:
-      - "{{ crt_path }}/ca.pem"
-      - "{{ crt_path }}/{{ ansible_nodename }}-key.pem"
-      - "{{ crt_path }}/{{ ansible_nodename }}.pem"
