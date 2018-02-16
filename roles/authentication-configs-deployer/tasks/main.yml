@@ -1,0 +1,10 @@
+---
+  - set_fact:
+      path: "./../authentication-configs/files"
+  - name: Copy the Kubernetes Configuration Files
+    copy:
+      dest: ~/
+      src: "{{ item }}"
+    with_items:
+      - "{{ path }}/{{ ansible_nodename }}.kubeconfig"
+      - "{{ path }}/kube-proxy.kubeconfig"

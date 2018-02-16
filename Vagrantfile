@@ -4,6 +4,21 @@
 
 Vagrant.configure("2") do |config|
   #
+  # LB
+  #
+  config.vm.define "lb" do |controller1|
+    controller1.vm.box = "centos/7"
+    controller1.vm.hostname = 'lb'
+
+    controller1.vm.network :private_network, ip: "10.0.0.125"
+
+    controller1.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 512]
+      v.customize ["modifyvm", :id, "--name", "lb"]
+    end
+  end
+  #
   # Controller #1
   #
   config.vm.define "controller1" do |controller1|

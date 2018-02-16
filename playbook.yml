@@ -27,3 +27,14 @@
           - "./../certificate-authority/files/ca.pem"
           - "./../certificate-authority/files/{{ ansible_nodename }}-key.pem"
           - "./../certificate-authority/files/{{ ansible_nodename }}.pem"
+
+  - name: Kubernetes Configuration Files for Authentication
+    hosts: localhost
+    roles:
+      - role: authentication-configs
+        crt_path: "./../certificate-authority/files"
+
+  - name: Distributing the Kubernetes Configuration Files
+    hosts: workers
+    roles:
+      - authentication-configs-deployer

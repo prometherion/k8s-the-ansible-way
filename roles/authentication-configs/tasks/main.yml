@@ -1,0 +1,52 @@
+---
+  - name: Gathering Kubernetes Public IP Address
+    set_fact:
+      kubernetes_public_address: "{{ hostvars.nginx.ansible_host }}"
+      path: "{{ role_path }}/{{ crt_path }}"
+  
+
+  - name: "Generating `kubelet` Kubernetes Configuration files"
+    shell: |
+      kubectl config set-cluster kubernetes-the-ansible-way \
+        --certificate-authority={{ path }}/ca.pem \
+        --embed-certs=true \
+        --server=https://{{ kubernetes_public_address }}:6443 \
+        --kubeconfig={{ role_path }}/files/{{ item }}.kubeconfig
+
+      kubectl config set-credentials system:node:{{ item }} \
+        --client-certificate={{ path }}/{{ item }}.pem \
+        --client-key={{ path }}/{{ item }}-key.pem \
+        --embed-certs=true \
+        --kubeconfig={{ role_path }}/files/{{ item }}.kubeconfig
+
+      kubectl config set-context default \
+        --cluster=kubernetes-the-ansible-way \
+        --user=system:node:{{ item }} \
+        --kubeconfig={{ role_path }}/files/{{ item }}.kubeconfig
+
+      kubectl config use-context default \
+        --kubeconfig={{ role_path }}/files/{{ item }}.kubeconfig
+    with_items:
+      - "{{ groups.workers }}"
+
+  - name: "Generating the `kube-proxy` Kubernetes Configuration File"
+    shell: |
+      kubectl config set-cluster kubernetes-the-ansible-way \
+        --certificate-authority={{ path }}/ca.pem \
+        --embed-certs=true \
+        --server=https://{{ kubernetes_public_address }}:6443 \
+        --kubeconfig={{ role_path }}/files/kube-proxy.kubeconfig
+      
+      kubectl config set-credentials kube-proxy \
+        --client-certificate={{ path }}/kube-proxy.pem \
+        --client-key=kube-proxy-key.pem \
+        --embed-certs=true \
+        --kubeconfig={{ role_path }}/files/kube-proxy.kubeconfig
+      
+      kubectl config set-context default \
+        --cluster=kubernetes-the-ansible-way \
+        --user=kube-proxy \
+        --kubeconfig={{ role_path }}/files/kube-proxy.kubeconfig
+      
+      kubectl config use-context default \
+        --kubeconfig={{ role_path }}/files/kube-proxy.kubeconfig
