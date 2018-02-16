@@ -39,6 +39,16 @@
     roles:
       - authentication-configs-deployer
 
+  - name: Generating the Data Encryption Config and Key
+    hosts: localhost
+    roles:
+      - data-encryption
+
+  - name: Distributing the Data Encryption Config and Key
+    hosts: controllers
+    roles:
+      - data-encryption-deployer
+
   - name: Installing Kubernetes API load balancer
     hosts: lb
     roles:

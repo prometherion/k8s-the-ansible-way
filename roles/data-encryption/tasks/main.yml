@@ -1,0 +1,13 @@
+---
+  - name: Generating a random key
+    shell: |
+      head -c 32 /dev/urandom | base64
+    register: encryption_key_raw
+
+  - set_fact:
+      encryption_key: "{{ encryption_key_raw.stdout }}"
+  
+  - name: Rendering Encryption configuration file
+    template:
+      src: encryption-config.yaml.j2
+      dest: "{{ role_path }}/files/encryption-config.yaml"
