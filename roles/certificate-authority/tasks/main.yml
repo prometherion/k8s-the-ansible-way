@@ -74,7 +74,7 @@
         -ca={{ crt_path }}/ca.pem \
         -ca-key={{ crt_path }}/ca-key.pem \
         -config={{ crt_path }}/ca-config.json \
-        -hostname=10.32.0.1,10.240.0.10,10.240.0.11,10.240.0.12,127.0.0.1,kubernetes.default \
+        -hostname=10.32.0.1,{% for host in groups['controllers'] %}{{ hostvars[host]['ansible_host'] }},{% endfor %}127.0.0.1,kubernetes.default \
         -profile=kubernetes \
         {{ crt_path }}/kubernetes-csr.json |
       cfssljson -bare {{ crt_path }}/kubernetes
