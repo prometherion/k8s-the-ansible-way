@@ -38,3 +38,8 @@
     hosts: workers
     roles:
       - authentication-configs-deployer
+
+  - name: Installing Kubernetes API load balancer
+    hosts: lb
+    roles:
+      - lb

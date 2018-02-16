@@ -1,2 +1,2 @@
 .vagrant
-inventory/hosts
+inventory/hosts.yml
