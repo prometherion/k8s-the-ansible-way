@@ -1,0 +1,25 @@
+---
+  - name: Installing EPEL release
+    yum:
+      name: epel-release
+      state: present
+
+  - name: Installing NGINX as Load Balancer
+    package:
+      name: nginx
+      state: present
+
+  - name: Setting systemd unit for NGINX
+    systemd:
+      name: nginx
+      state: started
+
+  - name: Rendering NGINX configuration file
+    template:
+      dest: /etc/nginx/conf.d/default.conf
+      src: default.conf.j2
+
+  - name: Reload NGINX configuration
+    systemd:
+      name: nginx
+      state: reloaded

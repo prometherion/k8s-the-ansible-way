@@ -1,0 +1,15 @@
+http {
+    upstream kube-api {
+{% for host in groups['controllers'] %}
+        server {{ hostvars[host]['ansible_host'] }}:6433;
+{% endfor %}
+    }
+
+    server {
+        listen 6433;
+
+        location / {
+            proxy_pass https://kube-api:6433;
+        }
+    }
+}
