@@ -3,7 +3,7 @@
       path: "./../authentication-configs/files"
   - name: Copy the Kubernetes Configuration Files
     copy:
-      dest: ~/
+      dest: /home/{{ ansible_user }}/
       src: "{{ item }}"
     with_items:
       - "{{ path }}/{{ ansible_nodename }}.kubeconfig"

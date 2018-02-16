@@ -1,28 +1,31 @@
 all:
   children:
     controllers:
-      become: true
       hosts:
         controller1:
           ansible_host: 10.0.0.10
           ansible_user: vagrant
+          ansible_become: true
           ansible_ssh_private_key_file: ./.vagrant/machines/controller1/virtualbox/private_key
         controller2:
           ansible_host: 10.0.0.11
           ansible_user: vagrant
+          ansible_become: true
           ansible_ssh_private_key_file: ./.vagrant/machines/controller2/virtualbox/private_key
         controller3:
           ansible_host: 10.0.0.12
           ansible_user: vagrant
+          ansible_become: true
           ansible_ssh_private_key_file: ./.vagrant/machines/controller3/virtualbox/private_key
     workers:
-      become: true
       hosts:
         worker1:
           ansible_host: 10.0.0.20
           ansible_user: vagrant
+          ansible_become: true
           ansible_ssh_private_key_file: ./.vagrant/machines/worker1/virtualbox/private_key
         worker2:
           ansible_host: 10.0.0.21
           ansible_user: vagrant
+          ansible_become: true
           ansible_ssh_private_key_file: ./.vagrant/machines/worker2/virtualbox/private_key

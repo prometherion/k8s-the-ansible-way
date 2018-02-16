@@ -34,7 +34,7 @@
     with_items:
         - "{{ groups.workers }}"
   
-  - name: "Generate the `{{ item }}` client certificate and private key"
+  - name: "Generate the workers client certificate and private key"
     shell: |
       cfssl gencert \
         -ca={{ crt_path }}/ca.pem \

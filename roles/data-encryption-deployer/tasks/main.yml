@@ -1,5 +1,5 @@
 ---
   - name: Copy Encryption Config File
     copy:
-      dest: ~/
+      dest: /home/{{ ansible_user }}/
       src: "./../data-encryption/files/encryption-config.yaml"
