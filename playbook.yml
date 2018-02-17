@@ -49,6 +49,11 @@
     roles:
       - data-encryption-deployer
 
+  - name: Bootstrapping the etcd Cluster
+    hosts: controllers
+    roles:
+      - etcd
+
   - name: Installing Kubernetes API load balancer
     hosts: lb
     roles:

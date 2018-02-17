@@ -1,0 +1,62 @@
+---
+  - set_fact:
+      etcd_version: etcd-v3.2.11-linux-amd64
+  - set_fact:
+      etcd_url: "https://github.com/coreos/etcd/releases/download/v3.2.11/{{ etcd_version }}.tar.gz"
+
+  - name: Download from GitHub
+    uri:
+      url: "{{ etcd_url }}"
+      dest: "/tmp/{{ etcd_version }}.tar.gz"
+      force: yes
+      status_code: 200,304
+
+  - name: Creating required folders
+    file:
+      state: directory
+      path: "{{ item }}"
+    with_items:
+      - /etc/etcd
+      - /var/lib/etcd
+
+  - name: Extracting from archive
+    unarchive:
+      remote_src: yes
+      src: "/tmp/{{ etcd_version }}.tar.gz"
+      dest: /tmp/
+
+  - name: Moving binaries
+    copy:
+      remote_src: yes
+      src: /tmp/{{ etcd_version }}/{{ item }}
+      dest: /bin/
+      mode: +x
+    with_items:
+      - etcd
+      - etcdctl
+
+  - name: Copying certs
+    copy:
+      remote_src: yes
+      src: "/home/{{ ansible_user }}/{{ item }}"
+      dest: "/etc/etcd/{{ item }}"
+    with_items:
+      - ca.pem
+      - kubernetes-key.pem
+      - kubernetes.pem
+
+  - name: Deploying systemd.unit file
+    template:
+      src: etcd.service.j2
+      dest: /etc/systemd/system/etcd.service
+
+  - name: Starting `etcd` service
+    systemd:
+      daemon_reload: yes
+      name: etcd.service
+      enabled: yes
+      state: restarted
+
+  - name: Checking that `etcd` started
+    shell: |
+      ETCDCTL_API=3 etcdctl member list
