@@ -6,91 +6,92 @@ Vagrant.configure("2") do |config|
   #
   # LB
   #
-  config.vm.define "lb" do |controller1|
-    controller1.vm.box = "centos/7"
-    controller1.vm.hostname = 'lb'
+  config.vm.define "lb" do |lb|
+    lb.vm.box = "centos/7"
+    lb.vm.hostname = 'lb'
+    lb.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/Europe/Rome /etc/localtime", run: "always"
+    lb.vm.network :private_network, ip: "10.0.0.125"
 
-    controller1.vm.network :private_network, ip: "10.0.0.125"
-
-    controller1.vm.provider :virtualbox do |v|
+    lb.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 512]
       v.customize ["modifyvm", :id, "--name", "lb"]
+
     end
   end
   #
-  # Controller #1
+  # controller #1
   #
-  config.vm.define "controller1" do |controller1|
-    controller1.vm.box = "centos/7"
-    controller1.vm.hostname = 'controller1'
+  config.vm.define "controller-1" do |controller|
+    controller.vm.box = "centos/7"
+    controller.vm.hostname = 'controller-1'
+    controller.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/Europe/Rome /etc/localtime", run: "always"
+    controller.vm.network :private_network, ip: "10.0.0.10"
 
-    controller1.vm.network :private_network, ip: "10.0.0.10"
-
-    controller1.vm.provider :virtualbox do |v|
+    controller.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 1024]
-      v.customize ["modifyvm", :id, "--name", "controller1"]
+      v.customize ["modifyvm", :id, "--name", "controller-1"]
     end
   end
   #
-  # Controller #2
+  # controller #2
   #
-  config.vm.define "controller2" do |controller2|
-    controller2.vm.box = "centos/7"
-    controller2.vm.hostname = 'controller2'
+  config.vm.define "controller-2" do |controller|
+    controller.vm.box = "centos/7"
+    controller.vm.hostname = 'controller-2'
+    controller.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/Europe/Rome /etc/localtime", run: "always"
+    controller.vm.network :private_network, ip: "10.0.0.11"
 
-    controller2.vm.network :private_network, ip: "10.0.0.11"
-
-    controller2.vm.provider :virtualbox do |v|
+    controller.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 1024]
-      v.customize ["modifyvm", :id, "--name", "controller2"]
+      v.customize ["modifyvm", :id, "--name", "controller-2"]
     end
   end
   #
-  # Controller #3
+  # controller #3
   #
-  config.vm.define "controller3" do |controller3|
-    controller3.vm.box = "centos/7"
-    controller3.vm.hostname = 'controller3'
+  config.vm.define "controller-3" do |controller|
+    controller.vm.box = "centos/7"
+    controller.vm.hostname = 'controller-3'
+    controller.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/Europe/Rome /etc/localtime", run: "always"
+    controller.vm.network :private_network, ip: "10.0.0.12"
 
-    controller3.vm.network :private_network, ip: "10.0.0.12"
-
-    controller3.vm.provider :virtualbox do |v|
+    controller.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 1024]
-      v.customize ["modifyvm", :id, "--name", "controller3"]
+      v.customize ["modifyvm", :id, "--name", "controller-3"]
     end
   end
   #
-  # Worker #1
+  # worker #1
   #
-  config.vm.define "worker1" do |worker1|
-    worker1.vm.box = "centos/7"
-    worker1.vm.hostname = 'worker1'
+  config.vm.define "worker-1" do |worker|
+    worker.vm.box = "centos/7"
+    worker.vm.hostname = 'worker-1'
+    worker.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/Europe/Rome /etc/localtime", run: "always"
+    worker.vm.network :private_network, ip: "10.0.0.20"
 
-    worker1.vm.network :private_network, ip: "10.0.0.20"
-
-    worker1.vm.provider :virtualbox do |v|
+    worker.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 1024]
-      v.customize ["modifyvm", :id, "--name", "worker1"]
+      v.customize ["modifyvm", :id, "--name", "worker-1"]
     end
   end
   #
-  # Worker #2
+  # worker #2
   #
-  config.vm.define "worker2" do |worker2|
-    worker2.vm.box = "centos/7"
-    worker2.vm.hostname = 'worker2'
+  config.vm.define "worker-2" do |worker|
+    worker.vm.box = "centos/7"
+    worker.vm.hostname = 'worker-2'
+    worker.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/Europe/Rome /etc/localtime", run: "always"
+    worker.vm.network :private_network, ip: "10.0.0.21"
 
-    worker2.vm.network :private_network, ip: "10.0.0.21"
-
-    worker2.vm.provider :virtualbox do |v|
+    worker.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 1024]
-      v.customize ["modifyvm", :id, "--name", "worker2"]
+      v.customize ["modifyvm", :id, "--name", "worker-2"]
     end
   end
 end
