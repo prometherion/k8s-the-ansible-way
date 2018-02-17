@@ -3,4 +3,4 @@
     command :
       url: https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64/kubectl
       dest: /usr/local/bin/kubectl
-      mode: 0750
+      mode: +x
