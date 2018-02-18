@@ -3,11 +3,21 @@
       path: "https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64"
 
   - name: Download and Install the Kubernetes Controller Binaries
-    get_url:
+    uri:
       url: "{{ path }}/{{ item }}"
       dest: "/bin/{{ item }}"
-      mode: +x
-      force: yes
+      status_code: 200,304
+    with_items:
+      - kube-apiserver
+      - kube-controller-manager
+      - kube-scheduler
+      - kubectl
+  
+  - name: Setting permissions to Kubernetes Controller Binaries
+    file:
+      path: "/bin/{{ item }}"
+      state: touch
+      mode: "+x"
     with_items:
       - kube-apiserver
       - kube-controller-manager
