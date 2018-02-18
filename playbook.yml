@@ -64,6 +64,11 @@
     roles:
       - kube-control-plane-kubelet-rbac-auth
 
+  - name: Opening firewall port for Controllers
+    hosts: controllers
+    roles:
+      - lb-controllers-firewall
+
   - name: Installing Kubernetes API load balancer
     hosts: lb
     roles:

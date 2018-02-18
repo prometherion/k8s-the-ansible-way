@@ -1,0 +1,6 @@
+---
+  - name: Opening port 6443 for Kubernetes API
+    firewalld:
+      port: 6443/tcp
+      permanent: true
+      state: enabled

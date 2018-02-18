@@ -1,15 +1,17 @@
-http {
-    upstream kube-api {
+upstream kube-api {
 {% for host in groups['controllers'] %}
-        server {{ hostvars[host]['ansible_host'] }}:6433;
+    server {{ hostvars[host]['ansible_host'] }}:6443;
 {% endfor %}
-    }
+}
 
-    server {
-        listen 6433;
+server {
+    listen 6433;
+    
+    ssl on;
+    ssl_certificate     /home/{{ ansible_user }}/kubernetes.pem;
+    ssl_certificate_key /home/{{ ansible_user }}/kubernetes-key.pem;
 
-        location / {
-            proxy_pass https://kube-api:6433;
-        }
+    location / {
+        proxy_pass https://kube-api;
     }
 }
