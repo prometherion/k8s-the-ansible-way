@@ -54,12 +54,12 @@
     roles:
       - etcd
 
-  - name: Installing Kubernetes API load balancer
-    hosts: lb
-    roles:
-      - lb
-
   - name: Installing Kubernetes control plane
     hosts: controllers
     roles:
       - kube-control-plane
+
+  - name: Installing Kubernetes API load balancer
+    hosts: lb
+    roles:
+      - lb
