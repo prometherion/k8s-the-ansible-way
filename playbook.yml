@@ -1,4 +1,9 @@
 ---
+
+  - name: RBAC for Kubelet Authorization
+    hosts: controllers[0]
+    roles:
+      - kube-control-plane-kubelet-rbac-auth
   - name: Installing the Client Tools
     hosts: localhost
     roles:
