@@ -27,4 +27,4 @@
     when: ansible_distribution != 'MacOSX'
 
   - name: Checking `kubectl`
-    command: kubectl version
+    command: kubectl version --client
