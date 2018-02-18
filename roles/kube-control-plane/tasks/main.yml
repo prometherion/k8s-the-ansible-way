@@ -1,0 +1,66 @@
+---
+  - set_fact:
+      path: "https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64"
+
+  - name: Download and Install the Kubernetes Controller Binaries
+    get_url:
+      url: "{{ path }}/{{ item }}"
+      dest: "/bin/{{ item }}"
+      mode: +x
+      force: yes
+    with_items:
+      - kube-apiserver
+      - kube-controller-manager
+      - kube-scheduler
+      - kubectl
+
+  - name: Creating Kubernetes directory
+    file:
+      path: /var/lib/kubernetes
+      state: directory
+
+  - name: Providing requested certs
+    copy:
+      remote_src: yes
+      src: "/home/vagrant/{{ item }}"
+      dest: "/var/lib/kubernetes/{{ item }}"
+    with_items:
+      - ca.pem
+      - ca-key.pem
+      - kubernetes-key.pem
+      - kubernetes.pem
+      - encryption-config.yaml
+
+  - name: Creating systemd unit for `kube-apiserver`
+    template:
+      src: kube-apiserver.service.j2
+      dest: /etc/systemd/system/kube-apiserver.service
+
+  - name: Creating systemd unit for `kube-controller-manager`
+    template:
+      src: kube-controller-manager.service.j2
+      dest: /etc/systemd/system/kube-controller-manager.service
+
+  - name: Creating systemd unit for `kube-scheduler.service`
+    template:
+      src: kube-scheduler.service.j2
+      dest: /etc/systemd/system/kube-scheduler.service
+
+  - name: Starting Controller Services
+    systemd:
+      daemon_reload: yes
+      name: "{{ item }}.service"
+      enabled: yes
+      state: started
+    with_items:
+      - kube-apiserver
+      - kube-controller-manager
+      - kube-scheduler
+
+  - name: Waiting for deploy of each components
+    pause:
+      seconds: 10
+
+  - name: Checking that each components is running
+    shell: |
+      kubectl get componentstatuses

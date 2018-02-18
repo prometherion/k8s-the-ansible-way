@@ -58,3 +58,8 @@
     hosts: lb
     roles:
       - lb
+
+  - name: Installing Kubernetes control plane
+    hosts: controllers
+    roles:
+      - kube-control-plane
