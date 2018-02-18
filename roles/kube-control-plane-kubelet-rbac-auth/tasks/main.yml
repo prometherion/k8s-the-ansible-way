@@ -4,7 +4,7 @@
       src: ClusterRole.yml.j2
       dest: /tmp/ClusterRole.yml
 
-  - name: Applying Cluste Role
+  - name: Applying Cluster Role
     shell: |
       kubectl apply -f /tmp/ClusterRole.yml
 
@@ -13,6 +13,6 @@
       src: ClusterRoleBinding.yml.j2
       dest: /tmp/ClusterRoleBinding.yml
 
-  - name: Applying Cluste Role Binding
+  - name: Applying Cluster Role Binding
     shell: |
       kubectl apply -f /tmp/ClusterRoleBinding.yml
