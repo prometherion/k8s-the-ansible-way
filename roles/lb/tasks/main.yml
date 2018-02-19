@@ -12,6 +12,7 @@
   - name: Setting systemd unit for NGINX
     systemd:
       name: nginx
+      enabled: yes
       state: started
 
   - name: Rendering NGINX configuration file
