@@ -1,0 +1,121 @@
+---
+  - name: Adding `flatpak` repository
+    package:
+      name: https://rpmfind.net/linux/centos/7.4.1708/os/x86_64/Packages/flatpak-0.8.7-1.el7.x86_64.rpm
+      state: present
+
+  - name: Updating repository
+    package:
+      name: "*"
+      state: latest
+
+  - name: Adding required packages
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - socat
+      - gpgme
+      - ostree
+
+  - set_fact:
+      kube:
+        url: "https://storage.googleapis.com/kubernetes-release/release/v1.7.4/bin/linux/amd64"
+      runc:
+        url: "https://github.com/opencontainers/runc/releases/download"
+        version: "v1.0.0-rc4"
+      crio:
+        url: "https://storage.googleapis.com/kubernetes-the-hard-way"
+        version: "amd64-v1.0.0-beta.0"
+        compression: "tar.gz"
+      cni:
+        url: "https://github.com/containernetworking/plugins/releases/download"
+        version: "v0.6.0"
+        compression: "tgz"
+
+  - name: Installing Kubernetes worker binaries
+    uri:
+      url: "{{ kube.url }}/{{ item }}"
+      dest: "/tmp/{{ item }}"
+      status_code: 200,304
+    with_items:
+      - kubelet
+      - kubectl
+      - kube-proxy
+  
+  - name: Installing runc binary
+    uri:
+      force: yes
+      url: "{{ runc.url }}/{{ runc.version }}/runc.amd64"
+      dest: "/tmp/runc.amd64"
+      status_code: 200,304
+  
+  - name: Installing CRI-O
+    uri:
+      url: "{{ crio.url }}/crio-{{ crio.version }}.{{ crio.compression }}"
+      dest: "/tmp/crio-{{ crio.version }}.{{ crio.compression }}"
+      status_code: 200,304
+
+  - name: Installing CNI
+    uri:
+      url: "{{ cni.url }}/{{ cni.version }}/cni-plugins-amd64-{{ cni.version }}.{{ cni.compression }}"
+      dest: "/tmp/cni-plugins-amd64-{{ cni.version }}.{{ cni.compression }}"
+      status_code: 200,304
+  
+  - name: Create the installation directories
+    file:
+      state: directory
+      path: "{{ item }}"
+    with_items:
+      - /etc/containers
+      - /etc/cni/net.d
+      - /etc/crio
+      - /opt/cni/bin
+      - /usr/local/libexec/crio
+      - /var/lib/kubelet
+      - /var/lib/kube-proxy
+      - /var/lib/kubernetes
+      - /var/run/kubernetes
+
+  - name: Unzipping CNI
+    unarchive:
+      remote_src: yes
+      src: "/tmp/cni-plugins-amd64-v0.6.0.tgz"
+      dest: /opt/cni/bin/
+
+  - name: Unzipping CRI-O
+    unarchive:
+      remote_src: yes
+      src: "/tmp/crio-amd64-v1.0.0-beta.0.tar.gz"
+      dest: /tmp/
+
+  - name: Installing runc
+    copy:
+      remote_src: yes
+      src: /tmp/runc.amd64
+      dest: /bin/runc
+      mode: +x
+  
+  - name: Installing Kubernetes binaries
+    copy:
+      remote_src: yes
+      src: "/tmp/{{ item }}"
+      dest: "/bin/{{ item }}"
+      mode: +x
+    with_items:
+      - crio
+      - crioctl
+      - kpod
+      - kubectl
+      - kube-proxy
+      - kubelet
+
+  - name: Moving binaries for CRI-O
+    copy:
+      remote_src: yes
+      src: "/tmp/{{ item }}"
+      dest: "/usr/local/libexec/crio/{{ item }}"
+      mode: +x
+    with_items:
+      - conmon
+      - pause
