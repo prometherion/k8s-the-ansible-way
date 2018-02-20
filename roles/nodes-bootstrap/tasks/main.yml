@@ -1,0 +1,14 @@
+---
+  - name: Installing `ntpd` for Clock sync
+    package:
+      name: ntp
+      state: present
+  
+  - name: Syncing clock
+    command: "ntpdate -u pool.ntp.org"
+  
+  - name: Enabling NTPD service
+    systemd:
+      name: ntpd
+      enabled: yes
+      state: started

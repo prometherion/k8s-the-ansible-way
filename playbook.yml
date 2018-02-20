@@ -4,6 +4,11 @@
     roles:
       - client-tools  
 
+  - name: Nodes bootstrap
+    hosts: all
+    roles:
+      - nodes-bootstap
+
   - name: Provisioning a CA and Generating TLS Certificates
     hosts: localhost
     roles:
