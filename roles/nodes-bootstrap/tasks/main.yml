@@ -5,29 +5,28 @@
       state: permissive
     register: selinux
 
-  - name: Reboot (if required)
-    shell: sleep 2 && shutdown -r now 'Reboot required' removes=/var/run/reboot-required
-    become: true
+  - name: Reboot the system to enable new SELinux policy
+    shell: sleep 2 && shutdown -r now 'Reboot after SELinux policy' removes=/var/run/reboot-required
     async: 1
     poll: 0
+    when: selinux.changed
     ignore_errors: true
-    when: selinux.changed
-
-  - name: Wait for reboot
-    local_action: wait_for host={{ ansible_hostname }} port=22 delay=10 state=started
-    when: selinux.changed
-
-  - name: Installing `ntpd` for clock sync
-    package:
-      name: ntp
-      state: present
   
-  - name: Syncing clock
+  - name: Wait for the server to come back online (part 1)
+    set_fact:
+      wait_for_host: "{{ ansible_host }}"
+    when: selinux.changed
+  - name: Wait for the server to come back online (part 2)
+    local_action:
+      module: wait_for
+        host="{{ wait_for_host }}"
+        state=started
+        delay=10
+        timeout=600
+        port=22
+    become: no
+    when: selinux.changed
+
+  - name: Updating clock without NTPD
     shell: |
-      ntpdate -u pool.ntp.org
-  
-  - name: Enabling NTPD service  
-    systemd:
-      name: ntpd
-      enabled: yes
-      state: restarted
+      date -u --set="$(curl -H 'Cache-Control: no-cache' -sD - http://google.com |grep '^Date:' |cut -d' ' -f3-6)"
