@@ -1,4 +1,8 @@
 ---
+  - stat:
+      path: "{{ kubeconfig_path }}/worker-1.kubeconfig"
+    register: kubelet_kubeconfig
+
   - name: "Generating `kubelet` Kubernetes Configuration files"
     shell: |
       kubectl config set-cluster kubernetes-the-ansible-way \
@@ -22,6 +26,11 @@
         --kubeconfig={{ kubeconfig_path }}/{{ item }}.kubeconfig
     with_items:
       - "{{ groups.workers }}"
+    when: not kubelet_kubeconfig.stat.exists
+
+  - stat:
+      path: "{{ kubeconfig_path }}/kube-proxy.kubeconfig"
+    register: kubeproxy_kubeconfig
 
   - name: "Generating the `kube-proxy` Kubernetes Configuration File"
     shell: |
@@ -44,3 +53,4 @@
       
       kubectl config use-context default \
         --kubeconfig={{ kubeconfig_path }}/kube-proxy.kubeconfig
+    when: not kubeproxy_kubeconfig.stat.exists

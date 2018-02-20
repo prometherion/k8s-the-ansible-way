@@ -7,15 +7,24 @@
       src: ca-csr.json.j2
       dest: "{{ crt_path }}/ca-csr.json"
 
+  - stat:
+      path: "{{ crt_path }}/ca.pem"
+    register: ca
+
   - name: Create the CA certificate signing request
     shell: |
       cfssl gencert -initca {{ crt_path }}/ca-csr.json |
       cfssljson -bare {{ crt_path }}/ca
+    when: ca.stat.exists == False
 
   - name: Gathering the Admin Client Certificate configuration file
     template:
       src: admin-csr.json.j2
       dest: "{{ crt_path }}/admin-csr.json"
+
+  - stat:
+      path: "{{ crt_path }}/admin.pem"
+    register: admin
 
   - name: Generate the `admin` client certificate and private key
     shell: |
@@ -26,6 +35,7 @@
         -profile=kubernetes \
         {{ crt_path }}/admin-csr.json |
       cfssljson -bare {{ crt_path }}/admin
+    when: admin.stat.exists == False
 
   - name: Gathering worker Kubelet configuration file
     template:
@@ -33,6 +43,10 @@
       dest: "{{ crt_path }}/{{ item }}-csr.json"
     with_items:
         - "{{ groups.workers }}"
+
+  - stat:
+      path: "{{ crt_path }}/worker-1.pem"
+    register: worker
 
   - name: "Generate the workers client certificate and private key"
     shell: |
@@ -46,12 +60,17 @@
       cfssljson -bare {{ crt_path }}/{{ item }}
     with_items:
       - "{{ groups.workers }}"
+    when: worker.stat.exists == False
   
   - name: Gathering the kube-proxy Client Certificate configuration file
     template:
       src: kube-proxy-csr.json.j2
       dest: "{{ crt_path }}/kube-proxy-csr.json"
   
+  - stat:
+      path: "{{ crt_path }}/kube-proxy.pem"
+    register: kubeproxy
+
   - name: Generate the `kube-proxy` client certificate and private key
     shell: |
       cfssl gencert \
@@ -61,7 +80,7 @@
         -profile=kubernetes \
         {{ crt_path }}/kube-proxy-csr.json |
       cfssljson -bare {{ crt_path }}/kube-proxy
-
+    when: kubeproxy.stat.exists == False
   
   - name: Gathering the Kubernetes API Server Certificate configuration file
     template:
@@ -71,7 +90,11 @@
   - set_fact:
       addr_lb: "{% for host in groups['lb'] %}{{ hostvars[host]['ansible_host'] }},{{ hostvars[host]['inventory_hostname'] }}{% if not loop.last %},{% endif %}{% endfor %}"
       addr_workers: "{% for host in groups['controllers'] %}{{ hostvars[host]['ansible_host'] }},{{ hostvars[host]['inventory_hostname'] }}{% if not loop.last %},{% endif %}{% endfor %}"
-      
+
+  - stat:
+      path: "{{ crt_path }}/kubernetes.pem"
+    register: kubernetes
+
   - name: Generate the `kube-api` client certificate and private key
     shell: |
       cfssl gencert \
@@ -82,4 +105,5 @@
         -profile=kubernetes \
         {{ crt_path }}/kubernetes-csr.json |
       cfssljson -bare {{ crt_path }}/kubernetes
+    when: kubernetes.stat.exists == False
   
