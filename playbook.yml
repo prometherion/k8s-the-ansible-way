@@ -83,7 +83,12 @@
     roles:
       - lb
 
-  - hosts: workers
+  - name: Bootstrapping the Kubernetes Worker nodes
+    hosts: workers
     roles:
       - worker-nodes-bootstrap
   
+  - name: Verification of Kubernetes Worker nodes
+    hosts: controllers[2]
+    roles:
+      - worker-nodes-bootstrap-verification

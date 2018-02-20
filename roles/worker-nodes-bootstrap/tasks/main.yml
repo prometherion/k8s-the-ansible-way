@@ -189,7 +189,3 @@
       - cri-containerd
       - kubelet
       - kube-proxy
-  
-  - name: Verification
-    shell: |
-      kubectl get nodes
