@@ -67,7 +67,7 @@
       - kube-controller-manager
       - kube-scheduler
 
-  - name: Waiting for deploy of each components
+  - name: Waiting for deploy of each component
     pause:
       seconds: 10
 
