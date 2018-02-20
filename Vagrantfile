@@ -13,6 +13,7 @@ Vagrant.configure("2") do |config|
     lb.vm.network :private_network, ip: "10.0.0.125"
 
     lb.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 512]
       v.customize ["modifyvm", :id, "--name", "lb"]
@@ -29,6 +30,7 @@ Vagrant.configure("2") do |config|
     controller.vm.network :private_network, ip: "10.0.0.10"
 
     controller.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 1024]
       v.customize ["modifyvm", :id, "--name", "controller-1"]
@@ -44,6 +46,7 @@ Vagrant.configure("2") do |config|
     controller.vm.network :private_network, ip: "10.0.0.11"
 
     controller.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 1024]
       v.customize ["modifyvm", :id, "--name", "controller-2"]
@@ -59,6 +62,7 @@ Vagrant.configure("2") do |config|
     controller.vm.network :private_network, ip: "10.0.0.12"
 
     controller.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 1024]
       v.customize ["modifyvm", :id, "--name", "controller-3"]
@@ -74,6 +78,7 @@ Vagrant.configure("2") do |config|
     worker.vm.network :private_network, ip: "10.0.0.20"
 
     worker.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--cpuexecutioncap", "25"]
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 1024]
       v.customize ["modifyvm", :id, "--name", "worker-1"]
@@ -89,6 +94,7 @@ Vagrant.configure("2") do |config|
     worker.vm.network :private_network, ip: "10.0.0.21"
 
     worker.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--cpuexecutioncap", "25"]
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 1024]
       v.customize ["modifyvm", :id, "--name", "worker-2"]
