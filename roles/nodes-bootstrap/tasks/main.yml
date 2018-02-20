@@ -1,5 +1,23 @@
 ---
-  - name: Installing `ntpd` for Clock sync
+  - name: Disabling SELinux
+    selinux:
+      policy: targeted
+      state: permissive
+    register: selinux
+
+  - name: Reboot (if required)
+    shell: sleep 2 && shutdown -r now 'Reboot required' removes=/var/run/reboot-required
+    become: true
+    async: 1
+    poll: 0
+    ignore_errors: true
+    when: selinux.changed
+
+  - name: Wait for reboot
+    local_action: wait_for host={{ ansible_hostname }} port=22 delay=10 state=started
+    when: selinux.changed
+
+  - name: Installing `ntpd` for clock sync
     package:
       name: ntp
       state: present
@@ -12,4 +30,4 @@
     systemd:
       name: ntpd
       enabled: yes
-      state: started
+      state: restarted
