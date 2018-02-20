@@ -43,6 +43,13 @@
       - kubectl
       - kube-proxy
   
+  - name: Installing containerd
+    uri:
+      force: yes
+      url: https://github.com/containerd/cri-containerd/releases/download/v1.0.0-beta.1/cri-containerd-1.0.0-beta.1.linux-amd64.tar.gz
+      dest: "/tmp/cri-containerd-1.0.0-beta.1.linux-amd64.tar.gz"
+      status_code: 200,304
+  
   - name: Installing runc binary
     uri:
       force: yes
@@ -83,6 +90,12 @@
       src: "/tmp/cni-plugins-amd64-v0.6.0.tgz"
       dest: /opt/cni/bin/
 
+  - name: Unzipping containerd
+    unarchive:
+      remote_src: yes
+      src: "/tmp/cri-containerd-1.0.0-beta.1.linux-amd64.tar.gz"
+      dest: /
+
   - name: Unzipping CRI-O
     unarchive:
       remote_src: yes
@@ -119,3 +132,64 @@
     with_items:
       - conmon
       - pause
+
+  - name: Configure CNI Networking
+    template:
+      src: "{{ item }}.j2"
+      dest: "/etc/cni/net.d/{{ item }}"
+    with_items:
+      - 10-bridge.conf
+      - 99-loopback.conf
+
+  - name: "Configure the Kubelet: CA"
+    copy:
+      remote_src: yes
+      src:  "/home/{{ ansible_user }}/ca.pem"
+      dest: "/var/lib/kubernetes/ca.pem"
+
+  - name: "Configure the Kubelet: worker key"
+    copy:
+      remote_src: yes
+      src:  "/home/{{ ansible_user }}/{{ item }}"
+      dest: "/var/lib/kubelet/{{ item }}"
+    with_items:
+      - "{{ ansible_hostname }}-key.pem"
+      - "{{ ansible_hostname }}.pem"
+
+  - name: "Configure the Kubelet: kubeconfig"
+    copy:
+      remote_src: yes
+      src:  "/home/{{ ansible_user }}/{{ ansible_hostname }}.kubeconfig"
+      dest: /var/lib/kubelet/kubeconfig
+  
+  - name: Setting up `Kubelet` systemd unit
+    template:
+      src: kubelet.service.j2
+      dest: /etc/systemd/system/kubelet.service
+
+  - name: "Configure the Kubernetes Proxy"
+    copy:
+      remote_src: yes
+      src:  "/home/{{ ansible_user }}/kube-proxy.kubeconfig"
+      dest: "/var/lib/kube-proxy/kubeconfig"
+  
+  - name: Setting up `kube-proxy` systemd unit
+    template:
+      src: kube-proxy.service.j2
+      dest: /etc/systemd/system/kube-proxy.service
+
+  - name: Starting services
+    systemd:
+      daemon_reload: yes
+      name: "{{ item }}"
+      enabled: yes
+      state: started
+    with_items:
+      - containerd
+      - cri-containerd
+      - kubelet
+      - kube-proxy
+  
+  - name: Verification
+    shell: |
+      kubectl get nodes
