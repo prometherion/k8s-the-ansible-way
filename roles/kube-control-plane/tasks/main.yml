@@ -32,7 +32,7 @@
   - name: Providing requested certs
     copy:
       remote_src: yes
-      src: "/home/vagrant/{{ item }}"
+      src: "/root/{{ item }}"
       dest: "/var/lib/kubernetes/{{ item }}"
     with_items:
       - ca.pem
