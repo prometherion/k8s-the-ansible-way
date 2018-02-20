@@ -37,7 +37,7 @@
   - name: Copying certs
     copy:
       remote_src: yes
-      src: "/home/{{ ansible_user }}/{{ item }}"
+      src: "/root/{{ item }}"
       dest: "/etc/etcd/{{ item }}"
     with_items:
       - ca.pem

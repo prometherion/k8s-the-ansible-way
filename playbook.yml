@@ -14,35 +14,37 @@
     roles:
       - certificate-authority
 
-  - name: Distributing Client Certificates for Controllers
-    hosts: controllers
-    roles:
-      - role: certificate-authority-deployer
-        items:
-          - "./../certificate-authority/files/ca.pem"
-          - "./../certificate-authority/files/ca-key.pem"
-          - "./../certificate-authority/files/kubernetes-key.pem"
-          - "./../certificate-authority/files/kubernetes.pem"
-
   - name: Distributing Client Certificates for Workers
     hosts: workers
     roles:
-      - role: certificate-authority-deployer
+      - role: artifact-deployer
         items:
-          - "./../certificate-authority/files/ca.pem"
-          - "./../certificate-authority/files/{{ ansible_nodename }}-key.pem"
-          - "./../certificate-authority/files/{{ ansible_nodename }}.pem"
+          - "{{ cert_path }}/ca.pem"
+          - "{{ cert_path }}/{{ ansible_nodename }}-key.pem"
+          - "{{ cert_path }}/{{ ansible_nodename }}.pem"
+
+  - name: Distributing Client Certificates for Controllers
+    hosts: controllers
+    roles:
+      - role: artifact-deployer
+        items:
+          - "{{ cert_path }}/ca.pem"
+          - "{{ cert_path }}/ca-key.pem"
+          - "{{ cert_path }}/kubernetes-key.pem"
+          - "{{ cert_path }}/kubernetes.pem"
 
   - name: Kubernetes Configuration Files for Authentication
     hosts: localhost
     roles:
-      - role: authentication-configs
-        crt_path: "./../certificate-authority/files"
+      - authentication-configs
 
   - name: Distributing the Kubernetes Configuration Files
     hosts: workers
     roles:
-      - authentication-configs-deployer
+      - role: artifact-deployer
+        items:
+          - "{{ kubeconfig_path }}/{{ ansible_nodename }}.kubeconfig"
+          - "{{ kubeconfig_path }}/kube-proxy.kubeconfig"
 
   - name: Generating the Data Encryption Config and Key
     hosts: localhost
@@ -52,7 +54,9 @@
   - name: Distributing the Data Encryption Config and Key
     hosts: controllers
     roles:
-      - data-encryption-deployer
+      - role: artifact-deployer
+        items:
+          - "{{ encryption_path }}/encryption-config.yaml"
 
   - name: Bootstrapping the etcd Cluster
     hosts: controllers
@@ -65,7 +69,7 @@
       - kube-control-plane
 
   - name: RBAC for Kubelet Authorization
-    hosts: controllers[0]
+    hosts: controllers[2]
     roles:
       - kube-control-plane-kubelet-rbac-auth
 

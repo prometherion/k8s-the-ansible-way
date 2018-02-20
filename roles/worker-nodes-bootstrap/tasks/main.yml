@@ -144,13 +144,13 @@
   - name: "Configure the Kubelet: CA"
     copy:
       remote_src: yes
-      src:  "/home/{{ ansible_user }}/ca.pem"
+      src:  "/root/ca.pem"
       dest: "/var/lib/kubernetes/ca.pem"
 
   - name: "Configure the Kubelet: worker key"
     copy:
       remote_src: yes
-      src:  "/home/{{ ansible_user }}/{{ item }}"
+      src:  "/root/{{ item }}"
       dest: "/var/lib/kubelet/{{ item }}"
     with_items:
       - "{{ ansible_hostname }}-key.pem"
@@ -159,7 +159,7 @@
   - name: "Configure the Kubelet: kubeconfig"
     copy:
       remote_src: yes
-      src:  "/home/{{ ansible_user }}/{{ ansible_hostname }}.kubeconfig"
+      src:  "/root/{{ ansible_hostname }}.kubeconfig"
       dest: /var/lib/kubelet/kubeconfig
   
   - name: Setting up `Kubelet` systemd unit
@@ -170,7 +170,7 @@
   - name: "Configure the Kubernetes Proxy"
     copy:
       remote_src: yes
-      src:  "/home/{{ ansible_user }}/kube-proxy.kubeconfig"
+      src:  "/root/kube-proxy.kubeconfig"
       dest: "/var/lib/kube-proxy/kubeconfig"
   
   - name: Setting up `kube-proxy` systemd unit
@@ -183,7 +183,7 @@
       daemon_reload: yes
       name: "{{ item }}"
       enabled: yes
-      state: started
+      state: restarted
     with_items:
       - containerd
       - cri-containerd

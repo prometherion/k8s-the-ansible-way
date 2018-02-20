@@ -61,7 +61,7 @@
       daemon_reload: yes
       name: "{{ item }}.service"
       enabled: yes
-      state: started
+      state: restarted
     with_items:
       - kube-apiserver
       - kube-controller-manager

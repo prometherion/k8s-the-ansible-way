@@ -13,7 +13,7 @@
     systemd:
       name: nginx
       enabled: yes
-      state: started
+      state: restarted
 
   - name: Rendering NGINX configuration file
     template:
@@ -22,8 +22,8 @@
 
   - name: Deploying Kubernetes certificates
     copy:
-      dest: "/home/{{ ansible_user }}/{{ item }}"
-      src: "./../certificate-authority/files/{{ item }}"
+      dest: "/root/{{ item }}"
+      src: "{{ cert_path }}/{{ item }}"
     with_items:
       - kubernetes.pem
       - kubernetes-key.pem
