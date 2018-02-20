@@ -56,10 +56,11 @@
       enabled: yes
       state: restarted
 
-  - name: Waiting for deploy of each node
-    pause:
-      seconds: 10
-
   - name: Checking that `etcd` started
     shell: |
       ETCDCTL_API=3 etcdctl member list
+    register: etcd_member_list
+    until: etcd_member_list.rc == 0
+    retries: 10
+    delay: 1
+    ignore_errors: yes

@@ -7,6 +7,11 @@
   - name: Applying Cluster Role
     shell: |
       kubectl apply -f /tmp/ClusterRole.yml
+    register: cluster_role
+    until: cluster_role.rc == 0
+    retries: 10
+    delay: 1
+    ignore_errors: yes
 
   - name: Gathering Cluster Role Binding YAML configuration
     template:
@@ -16,3 +21,8 @@
   - name: Applying Cluster Role Binding
     shell: |
       kubectl apply -f /tmp/ClusterRoleBinding.yml
+    register: cluster_role_binding
+    until: cluster_role_binding.rc == 0
+    retries: 10
+    delay: 1
+    ignore_errors: yes

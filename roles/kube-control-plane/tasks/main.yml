@@ -67,10 +67,11 @@
       - kube-controller-manager
       - kube-scheduler
 
-  - name: Waiting for deploy of each component
-    pause:
-      seconds: 10
-
   - name: Checking that each components is running
     shell: |
       kubectl get componentstatuses
+    register: componentstatuses
+    until: componentstatuses.rc == 0
+    retries: 10
+    delay: 1
+    ignore_errors: yes
