@@ -7,7 +7,7 @@
   - name: Nodes bootstrap
     hosts: all
     roles:
-      - nodes-bootstap
+      - nodes-bootstrap
 
   - name: Provisioning a CA and Generating TLS Certificates
     hosts: localhost
@@ -78,3 +78,8 @@
     hosts: lb
     roles:
       - lb
+
+  - hosts: workers
+    roles:
+      - worker-nodes-bootstrap
+  
