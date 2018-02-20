@@ -5,7 +5,7 @@ upstream kube-api {
 }
 
 server {
-    listen 6433;
+    listen 6443;
     
     ssl on;
     ssl_certificate     /home/{{ ansible_user }}/kubernetes.pem;
