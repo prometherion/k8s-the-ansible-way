@@ -39,7 +39,7 @@
       
       kubectl config set-credentials kube-proxy \
         --client-certificate={{ path }}/kube-proxy.pem \
-        --client-key=kube-proxy-key.pem \
+        --client-key={{ path }}/kube-proxy-key.pem \
         --embed-certs=true \
         --kubeconfig={{ role_path }}/files/kube-proxy.kubeconfig
       
