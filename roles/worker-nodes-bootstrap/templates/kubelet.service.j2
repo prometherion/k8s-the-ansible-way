@@ -6,6 +6,7 @@ Requires=cri-containerd.service
 
 [Service]
 ExecStart=/bin/kubelet \
+  --require-kubeconfig \
   --allow-privileged=true \
   --anonymous-auth=false \
   --authorization-mode=Webhook \
@@ -18,7 +19,7 @@ ExecStart=/bin/kubelet \
   --image-pull-progress-deadline=2m \
   --kubeconfig=/var/lib/kubelet/kubeconfig \
   --network-plugin=cni \
-  --pod-cidr=10.0.{{ play_hosts.index(inventory_hostname) }}.0/24 \
+  --pod-cidr=10.0.{{ play_hosts.index(inventory_hostname) + 1 }}.0/24 \
   --register-node=true \
   --runtime-request-timeout=15m \
   --tls-cert-file=/var/lib/kubelet/{{ ansible_hostname }}.pem \
