@@ -6,7 +6,6 @@ Requires=cri-containerd.service
 
 [Service]
 ExecStart=/bin/kubelet \
-  --require-kubeconfig \
   --allow-privileged=true \
   --anonymous-auth=false \
   --authorization-mode=Webhook \

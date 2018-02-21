@@ -20,7 +20,7 @@
 
   - set_fact:
       kube:
-        url: "https://storage.googleapis.com/kubernetes-release/release/v1.7.4/bin/linux/amd64"
+        url: "https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64"
       runc:
         url: "https://github.com/opencontainers/runc/releases/download"
         version: "v1.0.0-rc4"
