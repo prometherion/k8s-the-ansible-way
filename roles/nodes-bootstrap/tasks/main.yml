@@ -1,32 +1,9 @@
 ---
-  - name: Disabling SELinux
-    selinux:
-      policy: targeted
-      state: permissive
-    register: selinux
+- name: SELinux
+  import_tasks: selinux.yml
 
-  - name: Reboot the system to enable new SELinux policy
-    shell: sleep 2 && shutdown -r now 'Reboot after SELinux policy' removes=/var/run/reboot-required
-    async: 1
-    poll: 0
-    when: selinux.changed
-    ignore_errors: true
-  
-  - name: Wait for the server to come back online (part 1)
-    set_fact:
-      wait_for_host: "{{ ansible_host }}"
-    when: selinux.changed
-  - name: Wait for the server to come back online (part 2)
-    local_action:
-      module: wait_for
-        host="{{ wait_for_host }}"
-        state=started
-        delay=10
-        timeout=600
-        port=22
-    become: no
-    when: selinux.changed
+- name: Time sync
+  import_tasks: time-sync.yml
 
-  - name: Updating clock without NTPD
-    shell: |
-      date -u --set="$(curl -H 'Cache-Control: no-cache' -sD - http://google.com |grep '^Date:' |cut -d' ' -f3-6)"
+- name: Swap space
+  import_tasks: swap.yml

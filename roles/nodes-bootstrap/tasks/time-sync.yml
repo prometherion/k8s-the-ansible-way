@@ -1,0 +1,23 @@
+---
+- name: Installing NTPD
+  package:
+    name: ntp
+    state: present
+
+- name: Enabling NTPD
+  systemd:
+    daemon_reload: yes
+    service: ntpd
+    enabled: yes
+    state: started
+
+- name: Updating clock with NTP
+  shell: |
+    ntpdate -u pool.ntp.org
+  ignore_errors: yes
+  register: ntpd
+
+- name: Updating clock without NTPD (fallback)
+  shell: |
+    date -u --set="$(curl -H 'Cache-Control: no-cache' -sD - http://google.com |grep '^Date:' |cut -d' ' -f3-6)"
+  when: ntpd.rc != 0

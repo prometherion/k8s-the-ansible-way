@@ -1,0 +1,30 @@
+---
+- name: Disabling SELinux
+  selinux:
+    policy: targeted
+    state: permissive
+  register: selinux
+
+- name: Reboot the system to enable new SELinux policy
+  shell: sleep 2 && shutdown -r now 'Reboot after SELinux policy' removes=/var/run/reboot-required
+  async: 1
+  poll: 0
+  when: selinux.changed
+  ignore_errors: true
+
+- name: Wait for the server to come back online (part 1)
+  set_fact:
+    wait_for_host: "{{ ansible_host }}"
+    on_port: "{{ ansible_port|default(22) }}"
+  when: selinux.changed
+
+- name: Wait for the server to come back online (part 2)
+  local_action:
+    module: wait_for
+      host="{{ wait_for_host }}"
+      state=started
+      delay=10
+      timeout=600
+      port={{ on_port }}
+  become: no
+  when: selinux.changed
