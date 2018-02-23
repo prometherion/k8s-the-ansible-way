@@ -1,0 +1,28 @@
+---
+- name: Generate `admin` kubeconfig file suitable for authenticating
+  shell: |
+    kubectl config set-cluster kubernetes-the-ansible-way \
+      --certificate-authority={{ cert_path }}/ca.pem \
+      --embed-certs=true \
+      --server=https://{{ kubernetes_public_address }}:6443 
+
+- shell: |
+    kubectl config set-credentials admin \
+      --client-certificate={{ cert_path }}/admin.pem \
+      --client-key={{ cert_path }}/admin-key.pem
+
+- shell: |
+    kubectl config set-context kubernetes-the-ansible-way \
+      --cluster=kubernetes-the-ansible-way \
+      --user=admin
+
+- shell: |
+    kubectl config use-context kubernetes-the-ansible-way
+
+- name: Check the health of the remote Kubernetes cluster
+  shell: |
+    kubectl get componentstatuses
+
+- name: List the nodes in the remote Kubernetes cluster
+  shell: |
+    kubectl get nodes
