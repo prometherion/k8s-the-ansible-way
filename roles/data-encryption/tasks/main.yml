@@ -1,13 +1,21 @@
 ---
-  - name: Generating a random key
-    shell: |
-      head -c 32 /dev/urandom | base64
-    register: encryption_key_raw
-
-  - set_fact:
-      encryption_key: "{{ encryption_key_raw.stdout }}"
+- name: Checking if configuration file exists
+  stat:
+    path: "{{ role_path }}/files/encryption-config.yaml"
+  register: encryption_config
   
-  - name: Rendering Encryption configuration file
-    template:
-      src: encryption-config.yaml.j2
-      dest: "{{ role_path }}/files/encryption-config.yaml"
+- name: Generating a random key
+  shell: |
+    head -c 32 /dev/urandom | base64
+  register: encryption_key_raw
+  when: not encryption_config.stat.exists
+
+- set_fact:
+    encryption_key: "{{ encryption_key_raw.stdout }}"
+  when: not encryption_config.stat.exists
+
+- name: Rendering Encryption configuration file
+  template:
+    src: encryption-config.yaml.j2
+    dest: "{{ role_path }}/files/encryption-config.yaml"
+  when: not encryption_config.stat.exists
