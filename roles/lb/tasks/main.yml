@@ -1,34 +1,28 @@
 ---
-  - name: Installing EPEL release
-    yum:
-      name: epel-release
-      state: present
+- name: Installing EPEL release
+  yum:
+    name: epel-release
+    state: present
 
-  - name: Installing NGINX as Load Balancer
-    package:
-      name: nginx
-      state: present
+- name: Installing NGINX as Load Balancer
+  package:
+    name: nginx
+    state: present
 
-  - name: Setting systemd unit for NGINX
-    systemd:
-      name: nginx
-      enabled: yes
-      state: restarted
+- name: Setting systemd unit for NGINX
+  systemd:
+    name: nginx
+    enabled: yes
+    state: started
 
-  - name: Rendering NGINX configuration file
-    template:
-      dest: /etc/nginx/conf.d/default.conf
-      src: default.conf.j2
+- name: Rendering NGINX configuration file
+  template:
+    dest: /etc/nginx/nginx.conf
+    src: nginx.conf.j2
+  register: state
 
-  - name: Deploying Kubernetes certificates
-    copy:
-      dest: "/root/{{ item }}"
-      src: "{{ cert_path }}/{{ item }}"
-    with_items:
-      - kubernetes.pem
-      - kubernetes-key.pem
-
-  - name: Reload NGINX configuration
-    systemd:
-      name: nginx
-      state: reloaded
+- name: Reload NGINX configuration
+  systemd:
+    name: nginx
+    state: reloaded
+  when: state.changed
