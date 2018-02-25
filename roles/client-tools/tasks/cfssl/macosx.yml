@@ -1,3 +1,0 @@
----
-  - name: Installing `cfssl` alongside with `cfssljson`
-    command: brew install cfssl
