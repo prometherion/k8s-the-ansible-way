@@ -1,6 +1,6 @@
 ---
   - name: Installing `cfssl`
-    command :
+    get_url :
       url: https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
       dest: /usr/local/bin/cfssl
       mode: +x
