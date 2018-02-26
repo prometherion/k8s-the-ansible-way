@@ -36,7 +36,7 @@
     when: ansible_distribution == 'MacOSX'
 
   - name: Linux distribution
-    include_tasks: kubectl/loinux.yml
+    include_tasks: kubectl/linux.yml
     when: ansible_distribution != 'MacOSX'
 
   - name: Checking `kubectl`
