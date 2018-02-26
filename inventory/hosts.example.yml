@@ -1,31 +1,39 @@
 all:
   children:
+    lb:
+      become: true
+      hosts:
+        nginx:
+          ansible_host: 10.240.0.125
+          ansible_user: vagrant
+          ansible_become: true
+          ansible_ssh_private_key_file: ./.vagrant/machines/lb/virtualbox/private_key
     controllers:
       hosts:
-        controller1:
-          ansible_host: 10.0.0.10
+        controller-1:
+          ansible_host: 10.240.0.11
           ansible_user: vagrant
           ansible_become: true
-          ansible_ssh_private_key_file: ./.vagrant/machines/controller1/virtualbox/private_key
-        controller2:
-          ansible_host: 10.0.0.11
+          ansible_ssh_private_key_file: ./.vagrant/machines/controller-1/virtualbox/private_key
+        controller-2:
+          ansible_host: 10.240.0.12
           ansible_user: vagrant
           ansible_become: true
-          ansible_ssh_private_key_file: ./.vagrant/machines/controller2/virtualbox/private_key
-        controller3:
-          ansible_host: 10.0.0.12
+          ansible_ssh_private_key_file: ./.vagrant/machines/controller-2/virtualbox/private_key
+        controller-3:
+          ansible_host: 10.240.0.13
           ansible_user: vagrant
           ansible_become: true
-          ansible_ssh_private_key_file: ./.vagrant/machines/controller3/virtualbox/private_key
+          ansible_ssh_private_key_file: ./.vagrant/machines/controller-3/virtualbox/private_key
     workers:
       hosts:
-        worker1:
-          ansible_host: 10.0.0.20
+        worker-1:
+          ansible_host: 10.240.0.21
           ansible_user: vagrant
           ansible_become: true
-          ansible_ssh_private_key_file: ./.vagrant/machines/worker1/virtualbox/private_key
-        worker2:
-          ansible_host: 10.0.0.21
+          ansible_ssh_private_key_file: ./.vagrant/machines/worker-1/virtualbox/private_key
+        worker-2:
+          ansible_host: 10.240.0.22
           ansible_user: vagrant
           ansible_become: true
-          ansible_ssh_private_key_file: ./.vagrant/machines/worker2/virtualbox/private_key
+          ansible_ssh_private_key_file: ./.vagrant/machines/worker-2/virtualbox/private_key

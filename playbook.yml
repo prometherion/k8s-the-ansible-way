@@ -2,7 +2,7 @@
   - name: Installing the Client Tools
     hosts: localhost
     roles:
-      - client-tools  
+      - client-tools
 
   - name: Nodes bootstrap
     hosts: all
@@ -92,3 +92,8 @@
     hosts: controllers[2]
     roles:
       - worker-nodes-bootstrap-verification
+
+  - name: Configuring `kubectl` for Remote Access
+    hosts: localhost
+    roles:
+      - kubectl

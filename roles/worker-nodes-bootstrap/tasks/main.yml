@@ -4,11 +4,6 @@
       name: https://rpmfind.net/linux/centos/7.4.1708/os/x86_64/Packages/flatpak-0.8.7-1.el7.x86_64.rpm
       state: present
 
-  - name: Updating repository
-    package:
-      name: "*"
-      state: latest
-
   - name: Adding required packages
     package:
       name: "{{ item }}"
