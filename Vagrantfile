@@ -10,7 +10,7 @@ Vagrant.configure("2") do |config|
     lb.vm.box = "centos/7"
     lb.vm.hostname = 'lb'
     lb.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/Europe/Rome /etc/localtime", run: "always"
-    lb.vm.network :private_network, ip: "10.0.0.125"
+    lb.vm.network :private_network, ip: "10.240.0.125"
 
     lb.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -26,7 +26,7 @@ Vagrant.configure("2") do |config|
       controller.vm.box = "centos/7"
       controller.vm.hostname = "controller-#{i}"
       controller.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/Europe/Rome /etc/localtime", run: "always"
-      controller.vm.network :private_network, ip: "10.0.0.1#{i}"
+      controller.vm.network :private_network, ip: "10.240.0.1#{i}"
 
       config.vm.provider :virtualbox do |v|
         v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -42,7 +42,7 @@ Vagrant.configure("2") do |config|
       controller.vm.box = "centos/7"
       controller.vm.hostname = "worker-#{i}"
       controller.vm.provision :shell, :inline => "sudo rm /etc/localtime && sudo ln -s /usr/share/zoneinfo/Europe/Rome /etc/localtime", run: "always"
-      controller.vm.network :private_network, ip: "10.0.0.2#{i}"
+      controller.vm.network :private_network, ip: "10.240.0.2#{i}"
 
       config.vm.provider :virtualbox do |v|
         v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
