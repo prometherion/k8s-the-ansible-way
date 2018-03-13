@@ -134,3 +134,10 @@
   hosts: localhost
   roles:
   - kubectl
+
+- name: Installing `Weave Net` CNI plugin
+  hosts: localhost
+  roles:
+  - role: network-routes
+    tags:
+    - controllers
