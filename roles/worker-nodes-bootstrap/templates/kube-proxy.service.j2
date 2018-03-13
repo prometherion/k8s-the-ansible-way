@@ -3,7 +3,7 @@ Description=Kubernetes Kube Proxy
 Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
-ExecStart=/bin/kube-proxy \
+ExecStart=/usr/local/bin/kube-proxy \
   --cluster-cidr=10.200.0.0/16 \
   --kubeconfig=/var/lib/kube-proxy/kubeconfig \
   --proxy-mode=iptables \

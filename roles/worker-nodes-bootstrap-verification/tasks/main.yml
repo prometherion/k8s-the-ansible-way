@@ -1,9 +1,9 @@
 ---  
-  - name: Verification
-    shell: |
-      kubectl get nodes
-    register: nodes
-    until: nodes.rc == 0
-    retries: 20
-    delay: 1
-    ignore_errors: yes
+- name: Verification
+  shell: |
+    kubectl get nodes
+  register: nodes
+  until: nodes.rc == 0
+  retries: 20
+  delay: 1
+  ignore_errors: yes

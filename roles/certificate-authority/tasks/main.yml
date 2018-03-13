@@ -33,8 +33,7 @@
         -ca-key={{ crt_path }}/ca-key.pem \
         -config={{ crt_path }}/ca-config.json \
         -profile=kubernetes \
-        {{ crt_path }}/admin-csr.json |
-      cfssljson -bare {{ crt_path }}/admin
+        {{ crt_path }}/admin-csr.json | cfssljson -bare {{ crt_path }}/admin
     when: admin.stat.exists == False
 
   - name: Gathering worker Kubelet configuration file
@@ -42,7 +41,7 @@
       src: worker-csr.json.j2
       dest: "{{ crt_path }}/{{ item }}-csr.json"
     with_items:
-        - "{{ groups.workers }}"
+    - "{{ groups.workers }}"
 
   - stat:
       path: "{{ crt_path }}/worker-1.pem"
@@ -54,8 +53,8 @@
         -ca={{ crt_path }}/ca.pem \
         -ca-key={{ crt_path }}/ca-key.pem \
         -config={{ crt_path }}/ca-config.json \
+        -hostname {{ hostvars[item]['inventory_hostname'] }},{{ hostvars[item]|ip('private') }} \
         -profile=kubernetes \
-        -hostname={{ item }},{{ hostvars[item]['ansible_host'] }},{{ hostvars[item]['inventory_hostname'] }} \
         {{ crt_path }}/{{ item }}-csr.json |
       cfssljson -bare {{ crt_path }}/{{ item }}
     with_items:
@@ -88,8 +87,7 @@
       dest: "{{ crt_path }}/kubernetes-csr.json"
 
   - set_fact:
-      addr_lb: "{% for host in groups['lb'] %}{{ hostvars[host]['ansible_host'] }},{{ hostvars[host]['inventory_hostname'] }}{% if not loop.last %},{% endif %}{% endfor %}"
-      addr_controllers: "{% for host in groups['controllers'] %}{{ hostvars[host]['ansible_host'] }},{{ hostvars[host]['inventory_hostname'] }}{% if not loop.last %},{% endif %}{% endfor %}"
+      addr_controllers: "{% for item in groups.controllers %}{{ hostvars[item]|ip('private') }},{{ hostvars[item]['inventory_hostname'] }}{% if not loop.last %},{% endif %}{% endfor %}"
 
   - stat:
       path: "{{ crt_path }}/kubernetes.pem"
@@ -101,7 +99,7 @@
         -ca={{ crt_path }}/ca.pem \
         -ca-key={{ crt_path }}/ca-key.pem \
         -config={{ crt_path }}/ca-config.json \
-        -hostname=10.32.0.1,{{ addr_lb }},{{ addr_controllers }},127.0.0.1,kubernetes.default \
+        -hostname=10.32.0.1,{{ kubernetes_public_address }},{{ addr_controllers }},127.0.0.1,kubernetes.default \
         -profile=kubernetes \
         {{ crt_path }}/kubernetes-csr.json |
       cfssljson -bare {{ crt_path }}/kubernetes

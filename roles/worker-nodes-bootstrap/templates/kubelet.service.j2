@@ -5,7 +5,11 @@ After=cri-containerd.service
 Requires=cri-containerd.service
 
 [Service]
-ExecStart=/bin/kubelet \
+##
+# option `--node-ip` is declared due to issues with Vagrant eth0
+##
+ExecStart=/usr/local/bin/kubelet \
+  --node-ip {{ hostvars[inventory_hostname]|ip('private') }} \
   --allow-privileged=true \
   --anonymous-auth=false \
   --authorization-mode=Webhook \
@@ -21,8 +25,8 @@ ExecStart=/bin/kubelet \
   --pod-cidr=10.200.{{ play_hosts.index(inventory_hostname) }}.0/24 \
   --register-node=true \
   --runtime-request-timeout=15m \
-  --tls-cert-file=/var/lib/kubelet/{{ ansible_hostname }}.pem \
-  --tls-private-key-file=/var/lib/kubelet/{{ ansible_hostname }}-key.pem \
+  --tls-cert-file=/var/lib/kubelet/{{ inventory_hostname }}.pem \
+  --tls-private-key-file=/var/lib/kubelet/{{ inventory_hostname }}-key.pem \
   --v=2
 Restart=on-failure
 RestartSec=5

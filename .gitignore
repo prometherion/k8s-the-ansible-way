@@ -1,2 +1,3 @@
 .vagrant
 inventory/hosts.yml
+filter_plugins/ip.pyc

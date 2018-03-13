@@ -3,7 +3,7 @@ Description=Kubernetes Controller Manager
 Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
-ExecStart=/bin/kube-controller-manager \
+ExecStart=/usr/local/bin/kube-controller-manager \
   --address=0.0.0.0 \
   --cluster-cidr=10.200.0.0/16 \
   --cluster-name=kubernetes \

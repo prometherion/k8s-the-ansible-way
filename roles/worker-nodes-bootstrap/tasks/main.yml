@@ -1,186 +1,215 @@
 ---
-  - name: Adding `flatpak` repository
-    package:
-      name: https://rpmfind.net/linux/centos/7.4.1708/os/x86_64/Packages/flatpak-0.8.7-1.el7.x86_64.rpm
-      state: present
+- name: Adding required packages
+  become: true
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - socat
+  - gpgme
+  - ostree
 
-  - name: Adding required packages
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - socat
-      - gpgme
-      - ostree
+- set_fact:
+    kube:
+      url: "https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64"
+    runc:
+      url: "https://github.com/opencontainers/runc/releases/download"
+      version: "v1.0.0-rc4"
+    crio:
+      url: "https://storage.googleapis.com/kubernetes-the-hard-way"
+      version: "amd64-v1.0.0-beta.0"
+      compression: "tar.gz"
+    cni:
+      url: "https://github.com/containernetworking/plugins/releases/download"
+      version: "v0.6.0"
+      compression: "tgz"
 
-  - set_fact:
-      kube:
-        url: "https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64"
-      runc:
-        url: "https://github.com/opencontainers/runc/releases/download"
-        version: "v1.0.0-rc4"
-      crio:
-        url: "https://storage.googleapis.com/kubernetes-the-hard-way"
-        version: "amd64-v1.0.0-beta.0"
-        compression: "tar.gz"
-      cni:
-        url: "https://github.com/containernetworking/plugins/releases/download"
-        version: "v0.6.0"
-        compression: "tgz"
+- name: Installing Kubernetes worker binaries
+  uri:
+    url: "{{ kube.url }}/{{ item }}"
+    dest: "/tmp/{{ item }}"
+    status_code: 200,304
+  with_items:
+  - kubelet
+  - kubectl
+  - kube-proxy
 
-  - name: Installing Kubernetes worker binaries
-    uri:
-      url: "{{ kube.url }}/{{ item }}"
-      dest: "/tmp/{{ item }}"
-      status_code: 200,304
-    with_items:
-      - kubelet
-      - kubectl
-      - kube-proxy
+- name: Installing containerd
+  uri:
+    force: yes
+    url: https://github.com/containerd/cri-containerd/releases/download/v1.0.0-beta.1/cri-containerd-1.0.0-beta.1.linux-amd64.tar.gz
+    dest: "/tmp/cri-containerd-1.0.0-beta.1.linux-amd64.tar.gz"
+    status_code: 200,304
+
+- name: Installing runc binary
+  uri:
+    force: yes
+    url: "{{ runc.url }}/{{ runc.version }}/runc.amd64"
+    dest: "/tmp/runc.amd64"
+    status_code: 200,304
+
+- name: Installing CRI-O
+  uri:
+    url: "{{ crio.url }}/crio-{{ crio.version }}.{{ crio.compression }}"
+    dest: "/tmp/crio-{{ crio.version }}.{{ crio.compression }}"
+    status_code: 200,304
+
+- name: Installing CNI
+  uri:
+    url: "{{ cni.url }}/{{ cni.version }}/cni-plugins-amd64-{{ cni.version }}.{{ cni.compression }}"
+    dest: "/tmp/cni-plugins-amd64-{{ cni.version }}.{{ cni.compression }}"
+    status_code: 200,304
+
+- name: Create the installation directories
+  become: true
+  file:
+    state: directory
+    path: "{{ item }}"
+    owner: "{{ ansible_user }}"
+  with_items:
+  - /etc/containers
+  - /etc/cni/net.d
+  - /etc/crio
+  - /opt/cni/bin
+  - /usr/local/libexec/crio
+  - /var/lib/kubelet
+  - /var/lib/kube-proxy
+  - /var/lib/kubernetes
+  - /var/run/kubernetes
+
+- name: Unzipping CNI
+  unarchive:
+    remote_src: yes
+    src: "/tmp/cni-plugins-amd64-v0.6.0.tgz"
+    dest: /opt/cni/bin/
+
+- name: Unzipping containerd
+  become: true
+  unarchive:
+    remote_src: yes
+    src: "/tmp/cri-containerd-1.0.0-beta.1.linux-amd64.tar.gz"
+    dest: /
+
+- name: Unzipping CRI-O
+  unarchive:
+    remote_src: yes
+    src: "/tmp/crio-amd64-v1.0.0-beta.0.tar.gz"
+    dest: /tmp/
+
+- name: Installing runc
+  become: true
+  copy:
+    remote_src: yes
+    src: /tmp/runc.amd64
+    dest: /usr/local/bin/runc
+    mode: +x
+    owner: "{{ ansible_user }}"
+
+- name: Installing Kubernetes binaries
+  become: true
+  copy:
+    remote_src: yes
+    src: "/tmp/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: +x
+    owner: "{{ ansible_user }}"
+  with_items:
+  - crio
+  - crioctl
+  - kpod
+  - kubectl
+  - kube-proxy
+  - kubelet
+
+- name: Moving binaries for CRI-O
+  become: true
+  copy:
+    remote_src: yes
+    src: "/tmp/{{ item }}"
+    dest: "/usr/local/libexec/crio/{{ item }}"
+    mode: +x
+    owner: "{{ ansible_user }}"
+  with_items:
+  - conmon
+  - pause
+
+- name: Configure CNI Networking
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/cni/net.d/{{ item }}"
+  with_items:
+  - 10-bridge.conf
+  - 99-loopback.conf
+
+- name: Copying CRI-O configuration files
+  copy:
+    remote_src: yes
+    dest: /etc/crio/{{ item }}
+    src: "/tmp/{{ item }}"
+  with_items:
+    - crio.conf
+    - seccomp.json
+
+- name: Applying containers policy
+  copy:
+    remote_src: yes
+    dest: /etc/containers/policy.json
+    src: /tmp/policy.json
   
-  - name: Installing containerd
-    uri:
-      force: yes
-      url: https://github.com/containerd/cri-containerd/releases/download/v1.0.0-beta.1/cri-containerd-1.0.0-beta.1.linux-amd64.tar.gz
-      dest: "/tmp/cri-containerd-1.0.0-beta.1.linux-amd64.tar.gz"
-      status_code: 200,304
-  
-  - name: Installing runc binary
-    uri:
-      force: yes
-      url: "{{ runc.url }}/{{ runc.version }}/runc.amd64"
-      dest: "/tmp/runc.amd64"
-      status_code: 200,304
-  
-  - name: Installing CRI-O
-    uri:
-      url: "{{ crio.url }}/crio-{{ crio.version }}.{{ crio.compression }}"
-      dest: "/tmp/crio-{{ crio.version }}.{{ crio.compression }}"
-      status_code: 200,304
+- name: "Configure the Kubelet: CA"
+  copy:
+    remote_src: yes
+    src:  "~/ca.pem"
+    dest: "/var/lib/kubernetes/ca.pem"
 
-  - name: Installing CNI
-    uri:
-      url: "{{ cni.url }}/{{ cni.version }}/cni-plugins-amd64-{{ cni.version }}.{{ cni.compression }}"
-      dest: "/tmp/cni-plugins-amd64-{{ cni.version }}.{{ cni.compression }}"
-      status_code: 200,304
-  
-  - name: Create the installation directories
-    file:
-      state: directory
-      path: "{{ item }}"
-    with_items:
-      - /etc/containers
-      - /etc/cni/net.d
-      - /etc/crio
-      - /opt/cni/bin
-      - /usr/local/libexec/crio
-      - /var/lib/kubelet
-      - /var/lib/kube-proxy
-      - /var/lib/kubernetes
-      - /var/run/kubernetes
+- name: "Configure the Kubelet: worker key"
+  copy:
+    remote_src: yes
+    src:  "~/{{ item }}"
+    dest: "/var/lib/kubelet/{{ item }}"
+  with_items:
+  - "{{ ansible_hostname }}-key.pem"
+  - "{{ ansible_hostname }}.pem"
 
-  - name: Unzipping CNI
-    unarchive:
-      remote_src: yes
-      src: "/tmp/cni-plugins-amd64-v0.6.0.tgz"
-      dest: /opt/cni/bin/
+- name: "Configure the Kubelet: kubeconfig"
+  copy:
+    remote_src: yes
+    src:  "~/{{ ansible_hostname }}.kubeconfig"
+    dest: /var/lib/kubelet/kubeconfig
 
-  - name: Unzipping containerd
-    unarchive:
-      remote_src: yes
-      src: "/tmp/cri-containerd-1.0.0-beta.1.linux-amd64.tar.gz"
-      dest: /
+- name: Setting up `Kubelet` systemd unit
+  become: yes
+  template:
+    src: kubelet.service.j2
+    dest: /etc/systemd/system/kubelet.service
 
-  - name: Unzipping CRI-O
-    unarchive:
-      remote_src: yes
-      src: "/tmp/crio-amd64-v1.0.0-beta.0.tar.gz"
-      dest: /tmp/
+- name: Setting up `cri-containerd` systemd unit
+  become: yes
+  template:
+    src: cri-containerd.service.j2
+    dest: /etc/systemd/system/cri-containerd.service
 
-  - name: Installing runc
-    copy:
-      remote_src: yes
-      src: /tmp/runc.amd64
-      dest: /bin/runc
-      mode: +x
-  
-  - name: Installing Kubernetes binaries
-    copy:
-      remote_src: yes
-      src: "/tmp/{{ item }}"
-      dest: "/bin/{{ item }}"
-      mode: +x
-    with_items:
-      - crio
-      - crioctl
-      - kpod
-      - kubectl
-      - kube-proxy
-      - kubelet
+- name: "Configure the Kubernetes Proxy"
+  copy:
+    remote_src: yes
+    src:  "kube-proxy.kubeconfig"
+    dest: "/var/lib/kube-proxy/kubeconfig"
 
-  - name: Moving binaries for CRI-O
-    copy:
-      remote_src: yes
-      src: "/tmp/{{ item }}"
-      dest: "/usr/local/libexec/crio/{{ item }}"
-      mode: +x
-    with_items:
-      - conmon
-      - pause
+- name: Setting up `kube-proxy` systemd unit
+  become: yes
+  template:
+    src: kube-proxy.service.j2
+    dest: /etc/systemd/system/kube-proxy.service
 
-  - name: Configure CNI Networking
-    template:
-      src: "{{ item }}.j2"
-      dest: "/etc/cni/net.d/{{ item }}"
-    with_items:
-      - 10-bridge.conf
-      - 99-loopback.conf
-
-  - name: "Configure the Kubelet: CA"
-    copy:
-      remote_src: yes
-      src:  "/root/ca.pem"
-      dest: "/var/lib/kubernetes/ca.pem"
-
-  - name: "Configure the Kubelet: worker key"
-    copy:
-      remote_src: yes
-      src:  "/root/{{ item }}"
-      dest: "/var/lib/kubelet/{{ item }}"
-    with_items:
-      - "{{ ansible_hostname }}-key.pem"
-      - "{{ ansible_hostname }}.pem"
-
-  - name: "Configure the Kubelet: kubeconfig"
-    copy:
-      remote_src: yes
-      src:  "/root/{{ ansible_hostname }}.kubeconfig"
-      dest: /var/lib/kubelet/kubeconfig
-  
-  - name: Setting up `Kubelet` systemd unit
-    template:
-      src: kubelet.service.j2
-      dest: /etc/systemd/system/kubelet.service
-
-  - name: "Configure the Kubernetes Proxy"
-    copy:
-      remote_src: yes
-      src:  "/root/kube-proxy.kubeconfig"
-      dest: "/var/lib/kube-proxy/kubeconfig"
-  
-  - name: Setting up `kube-proxy` systemd unit
-    template:
-      src: kube-proxy.service.j2
-      dest: /etc/systemd/system/kube-proxy.service
-
-  - name: Starting services
-    systemd:
-      daemon_reload: yes
-      name: "{{ item }}"
-      enabled: yes
-      state: restarted
-    with_items:
-      - containerd
-      - cri-containerd
-      - kubelet
-      - kube-proxy
+- name: Starting services
+  become: yes
+  systemd:
+    daemon_reload: yes
+    name: "{{ item }}"
+    enabled: yes
+    state: restarted
+  with_items:
+  - containerd
+  - cri-containerd
+  - kubelet
+  - kube-proxy

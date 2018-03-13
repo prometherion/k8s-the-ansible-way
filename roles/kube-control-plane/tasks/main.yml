@@ -1,77 +1,85 @@
 ---
-  - set_fact:
-      path: "https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64"
+- set_fact:
+    path: "https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64"
 
-  - name: Download and Install the Kubernetes Controller Binaries
-    uri:
-      url: "{{ path }}/{{ item }}"
-      dest: "/bin/{{ item }}"
-      status_code: 200,304
-    with_items:
-      - kube-apiserver
-      - kube-controller-manager
-      - kube-scheduler
-      - kubectl
-  
-  - name: Setting permissions to Kubernetes Controller Binaries
-    file:
-      path: "/bin/{{ item }}"
-      state: touch
-      mode: "+x"
-    with_items:
-      - kube-apiserver
-      - kube-controller-manager
-      - kube-scheduler
-      - kubectl
+- name: Download and Install the Kubernetes Controller Binaries
+  become: yes
+  uri:
+    url: "{{ path }}/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    status_code: 200,304
+  with_items:
+  - kube-apiserver
+  - kube-controller-manager
+  - kube-scheduler
+  - kubectl
 
-  - name: Creating Kubernetes directory
-    file:
-      path: /var/lib/kubernetes
-      state: directory
+- name: Setting permissions to Kubernetes Controller Binaries
+  become: yes
+  file:
+    path: "/usr/local/bin/{{ item }}"
+    state: touch
+    mode: "+x"
+  with_items:
+  - kube-apiserver
+  - kube-controller-manager
+  - kube-scheduler
+  - kubectl
 
-  - name: Providing requested certs
-    copy:
-      remote_src: yes
-      src: "/root/{{ item }}"
-      dest: "/var/lib/kubernetes/{{ item }}"
-    with_items:
-      - ca.pem
-      - ca-key.pem
-      - kubernetes-key.pem
-      - kubernetes.pem
-      - encryption-config.yaml
+- name: Creating Kubernetes directory
+  become: yes
+  file:
+    path: /var/lib/kubernetes
+    state: directory
+    owner: "{{ ansible_user }}"
 
-  - name: Creating systemd unit for `kube-apiserver`
-    template:
-      src: kube-apiserver.service.j2
-      dest: /etc/systemd/system/kube-apiserver.service
+- name: Providing requested certs
+  copy:
+    remote_src: yes
+    src: "{{ item }}"
+    dest: "/var/lib/kubernetes/{{ item }}"
+  with_items:
+  - ca.pem
+  - ca-key.pem
+  - kubernetes-key.pem
+  - kubernetes.pem
+  - encryption-config.yaml
 
-  - name: Creating systemd unit for `kube-controller-manager`
-    template:
-      src: kube-controller-manager.service.j2
-      dest: /etc/systemd/system/kube-controller-manager.service
+- name: Creating systemd unit for `kube-apiserver`
+  become: yes
+  template:
+    src: kube-apiserver.service.j2
+    dest: /etc/systemd/system/kube-apiserver.service
 
-  - name: Creating systemd unit for `kube-scheduler.service`
-    template:
-      src: kube-scheduler.service.j2
-      dest: /etc/systemd/system/kube-scheduler.service
+- name: Creating systemd unit for `kube-controller-manager`
+  become: yes
+  template:
+    src: kube-controller-manager.service.j2
+    dest: /etc/systemd/system/kube-controller-manager.service
 
-  - name: Starting Controller Services
-    systemd:
-      daemon_reload: yes
-      name: "{{ item }}.service"
-      enabled: yes
-      state: restarted
-    with_items:
-      - kube-apiserver
-      - kube-controller-manager
-      - kube-scheduler
+- name: Creating systemd unit for `kube-scheduler.service`
+  become: yes
+  template:
+    src: kube-scheduler.service.j2
+    dest: /etc/systemd/system/kube-scheduler.service
 
-  - name: Checking that each components is running
-    shell: |
-      kubectl get componentstatuses
-    register: componentstatuses
-    until: componentstatuses.rc == 0
-    retries: 10
-    delay: 1
-    ignore_errors: yes
+- name: Starting Controller Services
+  become: yes
+  systemd:
+    daemon_reload: yes
+    name: "{{ item }}"
+    enabled: yes
+    state: restarted
+  with_items:
+  - kube-apiserver
+  - kube-controller-manager
+  - kube-scheduler
+
+- name: Checking that each components is running
+  shell: |
+    kubectl get componentstatuses
+  register: componentstatuses
+  until: componentstatuses.rc == 0
+  retries: 10
+  delay: 1
+  ignore_errors: yes

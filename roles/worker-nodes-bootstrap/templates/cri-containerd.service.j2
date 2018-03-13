@@ -1,0 +1,22 @@
+[Unit]
+Description=Kubernetes containerd CRI shim
+Requires=network-online.target
+After=containerd.service
+
+[Service]
+Restart=always
+RestartSec=5
+LimitNOFILE=1048576
+# Having non-zero Limit*s causes performance problems due to accounting overhead
+# in the kernel. We recommend using cgroups to do container-local accounting.
+LimitNPROC=infinity
+LimitCORE=infinity
+##
+# option `--stream-addr` is declared due to issues with Vagrant eth0
+##
+ExecStart=/usr/local/bin/cri-containerd \
+    --stream-addr {{ hostvars[inventory_hostname]|ip('private') }} \
+    --logtostderr
+
+[Install]
+WantedBy=multi-user.target

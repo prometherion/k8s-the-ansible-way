@@ -1,9 +1,17 @@
 ---
+- name: Setting hostname
+  become: yes
+  hostname:
+    name: "{{ inventory_hostname }}"
+
 - name: SELinux
+  become: yes
   import_tasks: selinux.yml
 
 - name: Time sync
+  become: true
   import_tasks: time-sync.yml
 
 - name: Swap space
+  become: true
   import_tasks: swap.yml

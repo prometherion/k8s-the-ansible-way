@@ -1,17 +1,16 @@
 {
-    "CN": "system:node:{{ item }}",
-    "key": {
-      "algo": "rsa",
-      "size": 2048
-    },
-    "names": [
-      {
-        "C": "{{ country|default('US') }}",
-        "L": "{{ city|default('Portland') }}",
-        "O": "system:nodes",
-        "OU": "{{ organization_unit|default('CA') }}",
-        "ST": "Oregon"
-      }
-    ]
-  }
-  
+  "CN": "system:node:{{ item }}",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "{{ country|default('US') }}",
+      "L": "{{ city|default('Portland') }}",
+      "O": "system:nodes",
+      "OU": "{{ organization_unit|default('Kubernetes The Ansible Way') }}",
+      "ST": "{{ state|default('Oregon') }}"
+    }
+  ]
+}

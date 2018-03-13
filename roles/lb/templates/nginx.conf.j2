@@ -7,7 +7,7 @@ load_module /usr/lib64/nginx/modules/ngx_stream_module.so;
 stream {
     upstream kube-api {
 {% for host in groups['controllers'] %}
-        server {{ hostvars[host]['ansible_host'] }}:6443;
+        server {{ hostvars[host]|ip('private') }}:6443;
 {% endfor %}
     }
 
@@ -20,8 +20,6 @@ stream {
 events {
     worker_connections 1024;
 }
-
-include /etc/nginx/conf.d/*.conf;
 
 http {
     log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '

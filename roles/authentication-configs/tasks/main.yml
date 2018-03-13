@@ -1,56 +1,56 @@
 ---
-  - stat:
-      path: "{{ kubeconfig_path }}/worker-1.kubeconfig"
-    register: kubelet_kubeconfig
+- stat:
+    path: "{{ kubeconfig_path }}/worker-1.kubeconfig"
+  register: kubelet_kubeconfig
 
-  - name: "Generating `kubelet` Kubernetes Configuration files"
-    shell: |
-      kubectl config set-cluster kubernetes-the-ansible-way \
-        --certificate-authority={{ cert_path }}/ca.pem \
-        --embed-certs=true \
-        --server=https://{{ kubernetes_public_address }}:6443 \
-        --kubeconfig={{ kubeconfig_path }}/{{ item }}.kubeconfig
+- name: "Generating `kubelet` Kubernetes Configuration files"
+  shell: |
+    kubectl config set-cluster kubernetes-the-ansible-way \
+      --certificate-authority={{ cert_path }}/ca.pem \
+      --embed-certs=true \
+      --server=https://{{ kubernetes_public_address }}:6443 \
+      --kubeconfig={{ kubeconfig_path }}/{{ item }}.kubeconfig
 
-      kubectl config set-credentials system:node:{{ item }} \
-        --client-certificate={{ cert_path }}/{{ item }}.pem \
-        --client-key={{ cert_path }}/{{ item }}-key.pem \
-        --embed-certs=true \
-        --kubeconfig={{ kubeconfig_path }}/{{ item }}.kubeconfig
+    kubectl config set-credentials system:node:{{ item }} \
+      --client-certificate={{ cert_path }}/{{ item }}.pem \
+      --client-key={{ cert_path }}/{{ item }}-key.pem \
+      --embed-certs=true \
+      --kubeconfig={{ kubeconfig_path }}/{{ item }}.kubeconfig
 
-      kubectl config set-context default \
-        --cluster=kubernetes-the-ansible-way \
-        --user=system:node:{{ item }} \
-        --kubeconfig={{ kubeconfig_path }}/{{ item }}.kubeconfig
+    kubectl config set-context default \
+      --cluster=kubernetes-the-ansible-way \
+      --user=system:node:{{ item }} \
+      --kubeconfig={{ kubeconfig_path }}/{{ item }}.kubeconfig
 
-      kubectl config use-context default \
-        --kubeconfig={{ kubeconfig_path }}/{{ item }}.kubeconfig
-    with_items:
-      - "{{ groups.workers }}"
-    when: not kubelet_kubeconfig.stat.exists
+    kubectl config use-context default \
+      --kubeconfig={{ kubeconfig_path }}/{{ item }}.kubeconfig
+  with_items:
+    - "{{ groups.workers }}"
+  when: not kubelet_kubeconfig.stat.exists
 
-  - stat:
-      path: "{{ kubeconfig_path }}/kube-proxy.kubeconfig"
-    register: kubeproxy_kubeconfig
+- stat:
+    path: "{{ kubeconfig_path }}/kube-proxy.kubeconfig"
+  register: kubeproxy_kubeconfig
 
-  - name: "Generating the `kube-proxy` Kubernetes Configuration File"
-    shell: |
-      kubectl config set-cluster kubernetes-the-ansible-way \
-        --certificate-authority={{ cert_path }}/ca.pem \
-        --embed-certs=true \
-        --server=https://{{ kubernetes_public_address }}:6443 \
-        --kubeconfig={{ kubeconfig_path }}/kube-proxy.kubeconfig
-      
-      kubectl config set-credentials kube-proxy \
-        --client-certificate={{ cert_path }}/kube-proxy.pem \
-        --client-key={{ cert_path }}/kube-proxy-key.pem \
-        --embed-certs=true \
-        --kubeconfig={{ kubeconfig_path }}/kube-proxy.kubeconfig
-      
-      kubectl config set-context default \
-        --cluster=kubernetes-the-ansible-way \
-        --user=kube-proxy \
-        --kubeconfig={{ kubeconfig_path }}/kube-proxy.kubeconfig
-      
-      kubectl config use-context default \
-        --kubeconfig={{ kubeconfig_path }}/kube-proxy.kubeconfig
-    when: not kubeproxy_kubeconfig.stat.exists
+- name: "Generating the `kube-proxy` Kubernetes Configuration File"
+  shell: |
+    kubectl config set-cluster kubernetes-the-ansible-way \
+      --certificate-authority={{ cert_path }}/ca.pem \
+      --embed-certs=true \
+      --server=https://{{ kubernetes_public_address }}:6443 \
+      --kubeconfig={{ kubeconfig_path }}/kube-proxy.kubeconfig
+    
+    kubectl config set-credentials kube-proxy \
+      --client-certificate={{ cert_path }}/kube-proxy.pem \
+      --client-key={{ cert_path }}/kube-proxy-key.pem \
+      --embed-certs=true \
+      --kubeconfig={{ kubeconfig_path }}/kube-proxy.kubeconfig
+    
+    kubectl config set-context default \
+      --cluster=kubernetes-the-ansible-way \
+      --user=kube-proxy \
+      --kubeconfig={{ kubeconfig_path }}/kube-proxy.kubeconfig
+    
+    kubectl config use-context default \
+      --kubeconfig={{ kubeconfig_path }}/kube-proxy.kubeconfig
+  when: not kubeproxy_kubeconfig.stat.exists

@@ -2,4 +2,4 @@
 cert_path: "{{ playbook_dir }}/roles/certificate-authority/files"
 kubeconfig_path: "{{ playbook_dir }}/roles/authentication-configs/files"
 encryption_path: "{{ playbook_dir }}/roles/data-encryption/files"
-kubernetes_public_address: "{{ hostvars.nginx.ansible_host }}"
+kubernetes_public_address: "10.240.0.125"

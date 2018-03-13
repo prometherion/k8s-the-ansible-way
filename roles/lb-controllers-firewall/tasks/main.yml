@@ -1,6 +1,13 @@
 ---
-  - name: Opening port 6443 for Kubernetes API
-    firewalld:
-      port: 6443/tcp
-      permanent: true
-      state: enabled
+- name: checking if `firewalld` is installed
+  shell: |
+    firewalld --version
+  register: firewalld
+  ignore_errors: yes
+
+- name: Opening port 6443 for Kubernetes API
+  firewalld:
+    port: 6443/tcp
+    permanent: true
+    state: enabled
+  when: firewalld.rc == 0

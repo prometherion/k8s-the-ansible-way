@@ -1,99 +1,136 @@
 ---
-  - name: Installing the Client Tools
-    hosts: localhost
-    roles:
-      - client-tools
+- name: Installing the Client Tools
+  hosts: localhost
+  roles:
+  - role: client-tools
+    tags:
+    - bootstrap
 
-  - name: Nodes bootstrap
-    hosts: all
-    roles:
-      - nodes-bootstrap
+- name: Nodes bootstrap
+  hosts: all
+  roles:
+  - role: nodes-bootstrap
+    tags:
+    - bootstrap
 
-  - name: Provisioning a CA and Generating TLS Certificates
-    hosts: localhost
-    roles:
-      - certificate-authority
+- name: Provisioning a CA and Generating TLS Certificates
+  hosts: localhost
+  roles:
+  - role: certificate-authority
+    tags:
+    - ca
 
-  - name: Distributing Client Certificates for Workers
-    hosts: workers
-    roles:
-      - role: artifact-deployer
-        items:
-          - "{{ cert_path }}/ca.pem"
-          - "{{ cert_path }}/{{ ansible_nodename }}-key.pem"
-          - "{{ cert_path }}/{{ ansible_nodename }}.pem"
+- name: Distributing Client Certificates for Workers
+  hosts: workers
+  roles:
+  - role: artifact-deployer
+    tags:
+    - ca
+    items:
+    - "{{ cert_path }}/ca.pem"
+    - "{{ cert_path }}/{{ inventory_hostname }}-key.pem"
+    - "{{ cert_path }}/{{ inventory_hostname }}.pem"
 
-  - name: Distributing Client Certificates for Controllers
-    hosts: controllers
-    roles:
-      - role: artifact-deployer
-        items:
-          - "{{ cert_path }}/ca.pem"
-          - "{{ cert_path }}/ca-key.pem"
-          - "{{ cert_path }}/kubernetes-key.pem"
-          - "{{ cert_path }}/kubernetes.pem"
+- name: Distributing Client Certificates for Controllers
+  hosts: controllers
+  roles:
+  - role: artifact-deployer
+    tags:
+    - ca
+    items:
+    - "{{ cert_path }}/ca.pem"
+    - "{{ cert_path }}/ca-key.pem"
+    - "{{ cert_path }}/kubernetes-key.pem"
+    - "{{ cert_path }}/kubernetes.pem"
 
-  - name: Kubernetes Configuration Files for Authentication
-    hosts: localhost
-    roles:
-      - authentication-configs
+- name: Kubernetes Configuration Files for Authentication
+  hosts: localhost
+  roles:
+  - role: authentication-configs
+    tags:
+    - rbac
 
-  - name: Distributing the Kubernetes Configuration Files
-    hosts: workers
-    roles:
-      - role: artifact-deployer
-        items:
-          - "{{ kubeconfig_path }}/{{ ansible_nodename }}.kubeconfig"
-          - "{{ kubeconfig_path }}/kube-proxy.kubeconfig"
+- name: Distributing the Kubernetes Configuration Files
+  hosts: workers
+  roles:
+  - role: artifact-deployer
+    tags:
+    - rbac
+    items:
+    - "{{ kubeconfig_path }}/{{ inventory_hostname }}.kubeconfig"
+    - "{{ kubeconfig_path }}/kube-proxy.kubeconfig"
 
-  - name: Generating the Data Encryption Config and Key
-    hosts: localhost
-    roles:
-      - data-encryption
+- name: Generating the Data Encryption Config and Key
+  hosts: localhost
+  roles:
+  - role: data-encryption
+    tags:
+    - bootstrap
+    - encryption
 
-  - name: Distributing the Data Encryption Config and Key
-    hosts: controllers
-    roles:
-      - role: artifact-deployer
-        items:
-          - "{{ encryption_path }}/encryption-config.yaml"
+- name: Distributing the Data Encryption Config and Key
+  hosts: controllers
+  roles:
+  - role: artifact-deployer
+    tags:
+    - encryption
+    items:
+    - "{{ encryption_path }}/encryption-config.yaml"
 
-  - name: Bootstrapping the etcd Cluster
-    hosts: controllers
-    roles:
-      - etcd
+- name: Bootstrapping the etcd Cluster
+  hosts: controllers
+  roles:
+  - role: etcd
+    tags:
+    - etcd
 
-  - name: Installing Kubernetes control plane
-    hosts: controllers
-    roles:
-      - kube-control-plane
+- name: Installing Kubernetes control plane
+  hosts: controllers
+  roles:
+  - role: kube-control-plane
+    tags:
+    - controllers
 
-  - name: RBAC for Kubelet Authorization
-    hosts: controllers[2]
-    roles:
-      - kube-control-plane-kubelet-rbac-auth
+- name: RBAC for Kubelet Authorization
+  hosts: controllers[2]
+  roles:
+  - role: kube-control-plane-kubelet-rbac-auth
+    tags:
+    - controllers
+    - rbac
 
-  - name: Opening firewall port for Controllers
-    hosts: controllers
-    roles:
-      - lb-controllers-firewall
+- name: Opening firewall port for Controllers
+  become: yes
+  hosts: controllers
+  roles:
+  - role: lb-controllers-firewall
+    tags:
+    - controllers
+    - lb
 
-  - name: Installing Kubernetes API load balancer
-    hosts: lb
-    roles:
-      - lb
+- name: Installing Kubernetes API load balancer
+  become: yes
+  hosts: lb
+  roles:
+  - role: lb
+    tags:
+    - lb
 
-  - name: Bootstrapping the Kubernetes Worker nodes
-    hosts: workers
-    roles:
-      - worker-nodes-bootstrap
-  
-  - name: Verification of Kubernetes Worker nodes
-    hosts: controllers[2]
-    roles:
-      - worker-nodes-bootstrap-verification
+- name: Bootstrapping the Kubernetes Worker nodes
+  hosts: workers
+  roles:
+  - role: worker-nodes-bootstrap
+    tags:
+    - workers
 
-  - name: Configuring `kubectl` for Remote Access
-    hosts: localhost
-    roles:
-      - kubectl
+- name: Verification of Kubernetes Worker nodes
+  hosts: controllers[2]
+  roles:
+  - role: worker-nodes-bootstrap-verification
+    tags:
+    - workers
+
+- name: Configuring `kubectl` for Remote Access
+  hosts: localhost
+  roles:
+  - kubectl
